@@ -42,6 +42,8 @@ import priceReducer from '../slices/priceSlice';
 import { persistConfig } from './persistConfig';
 import { setStoreRef } from './storeRef'; // Import this
 
+import shopStatusReducer from '../slices/Shopstatusslice';
+
 const persistCartReducer = persistReducer(
   persistConfig,
   cartReducer
@@ -54,6 +56,7 @@ export const store = configureStore({
     address: addressReducer,
     addressSelection: addressSelectionReducer,
     price: priceReducer,
+    shopStatus: shopStatusReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

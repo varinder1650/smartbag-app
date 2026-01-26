@@ -123,11 +123,12 @@ export default function OrderTrackingScreen() {
                 // Fetch active order
                 console.log("Fetching active order");
                 response = await api.get<ActiveOrder>("/orders/active");
+                console.log("Active order:", response.data);
             }
 
             if (response.data) {
                 setOrder(response.data);
-
+                console.log("Order set:", order);
                 // Show rating if delivered and not rated
                 if (response.data.order_status === "delivered" && !response.data.rating) {
                     setShowRating(true);
@@ -360,7 +361,9 @@ export default function OrderTrackingScreen() {
         );
     }
 
-    const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === order.order_status);
+    const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === order.order_status.toLowerCase());
+    const currentStepConfig = STATUS_STEPS[currentStepIndex] || STATUS_STEPS[0]; // Fallback to first step if unknown
+
     const canAddTip = ["assigned", "out_for_delivery"].includes(order.order_status) && !order.tip_amount;
 
     return (
@@ -391,7 +394,7 @@ export default function OrderTrackingScreen() {
                             >
                                 <View className="bg-white/20 p-3 rounded-full">
                                     <Ionicons
-                                        name={STATUS_STEPS[currentStepIndex]?.icon as any}
+                                        name={currentStepConfig.icon as any}
                                         size={24}
                                         color="black"
                                     />
@@ -402,7 +405,7 @@ export default function OrderTrackingScreen() {
                                     Order Status
                                 </Text>
                                 <Text className="text-black text-xl font-bold">
-                                    {STATUS_STEPS[currentStepIndex]?.label}
+                                    {currentStepConfig.label}
                                 </Text>
                             </View>
                         </View>
@@ -626,7 +629,7 @@ export default function OrderTrackingScreen() {
                         if (item.type === 'product') {
                             return (
                                 <View key={index} className="flex-row items-center mb-3 pb-3 border-b border-gray-100">
-                                    {item.product_image?.[0] && (
+                                    {item.product_image?.[0] && typeof item.product_image[0] === 'string' && (
                                         <Image
                                             source={{ uri: item.product_image[0] }}
                                             className="w-16 h-16 rounded-lg"

@@ -1,7 +1,9 @@
-import api from "@/utils/client";
+import { fetchShopStatus } from "@/slices/Shopstatusslice";
+import { AppDispatch, RootState } from "@/store/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 interface ShopStatus {
     is_open: boolean;
@@ -12,42 +14,20 @@ interface ShopStatus {
 }
 
 export default function ShopStatusBanner() {
-    const [shopStatus, setShopStatus] = useState<ShopStatus | null>(null);
+    const dispatch = useDispatch<AppDispatch>();
+    const shopStatus = useSelector((state: RootState) => state.shopStatus.status);
     const [isVisible, setIsVisible] = useState(false);
     const [slideAnim] = useState(new Animated.Value(-100));
 
     useEffect(() => {
-        fetchShopStatus();
-        const interval = setInterval(fetchShopStatus, 120000);
-
-        return () => clearInterval(interval);
-    }, []);
-
-    const fetchShopStatus = async () => {
-        try {
-            const response = await api.get<ShopStatus>("shop/status");
-            setShopStatus(response.data);
-
-            // Show banner only if shop is closed
-            if (!response.data.is_open) {
-                setIsVisible(true);
-                animateIn();
-            } else {
-                setIsVisible(false);
-                animateOut();
-            }
-        } catch (error) {
-            console.error("Failed to fetch shop status:", error);
-            // Default to open if can't fetch
-            setShopStatus({
-                is_open: true,
-                reopen_time: null,
-                reason: null,
-                // updated_at: new Date().toISOString(),
-                // updated_by: "system"
-            });
+        if (shopStatus && !shopStatus.is_open) {
+            setIsVisible(true);
+            animateIn();
+        } else {
+            setIsVisible(false);
+            animateOut();
         }
-    };
+    }, [shopStatus]);
 
     const animateIn = () => {
         Animated.spring(slideAnim, {
@@ -63,7 +43,9 @@ export default function ShopStatusBanner() {
             toValue: -100,
             duration: 300,
             useNativeDriver: true,
-        }).start();
+        }).start(() => {
+            // Optional: setIsVisible(false) here after animation
+        });
     };
 
     const formatReopenTime = (reopenTime: string | null) => {
@@ -146,9 +128,8 @@ export default function ShopStatusBanner() {
                             {message.message}
                         </Text>
 
-                        {/* Retry button */}
                         <Pressable
-                            onPress={fetchShopStatus}
+                            onPress={() => dispatch(fetchShopStatus())}
                             className="mt-3 bg-red-100 py-2 px-4 rounded-lg self-start"
                         >
                             <Text className="text-red-700 font-semibold text-xs">

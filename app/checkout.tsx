@@ -234,9 +234,34 @@ export default function CheckoutScreen() {
     useEffect(() => {
         let timer: any;
         if (showSuccess) {
+            // Start animation
+            scaleAnim.setValue(0);
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                friction: 5,
+                tension: 40,
+                useNativeDriver: true,
+            }).start();
+
             timer = setTimeout(() => {
                 setShowSuccess(false);
-                router.back();
+                // navigate to home or history instead of back? 
+                // Original code was router.back(), but generally after checkout one goes to Home or Order Details.
+                // Keeping router.replace("./") logic from confirmOrder which was seemingly unused due to this effect?
+                // Wait, confirmOrder calls router.replace("./") AND sets showSuccess(true).
+                // If confirmOrder calls replace("./"), this component might unmount before the animation finishes or shows?
+                // Actually confirmOrder:
+                // 263:                 setShowSuccess(true);
+                // 264:                 router.replace("./");
+                // If it replaces the route, this component unmounts. showSuccess won't be visible.
+                // The logical flow should be: calculate -> confirm -> show success -> wait -> navigate.
+
+                // Let's fix the confirmOrder flow too if it's broken, but first let's stick to the prompt: animation.
+                // However, I noticed line 264: router.replace("./"); inside confirmOrder. 
+                // If that happens immediately, the user won't see the success modal in THIS component.
+                // I should probably remove the router.replace("./") from confirmOrder and let this useEffect handle the navigation after the delay.
+
+                router.replace("/");
             }, 2000);
         }
         return () => {
@@ -261,7 +286,7 @@ export default function CheckoutScreen() {
                 dispatch(clearCartLocal("guest"));
 
                 setShowSuccess(true);
-                router.replace("./");
+                // Removed router.replace here to allow the success modal to show
             }
         } catch (error) {
             throw error;
@@ -455,9 +480,12 @@ export default function CheckoutScreen() {
             {showSuccess && (
                 <View className="absolute inset-0 z-50 bg-black/50 items-center justify-center">
                     <View className="bg-white p-8 rounded-3xl items-center shadow-xl w-64">
-                        <View className="bg-green-100 p-4 rounded-full mb-4">
+                        <Animated.View
+                            style={{ transform: [{ scale: scaleAnim }] }}
+                            className="bg-green-100 p-4 rounded-full mb-4"
+                        >
                             <Ionicons name="checkmark" size={48} color="#10B981" />
-                        </View>
+                        </Animated.View>
                         <Text className="text-xl font-bold text-gray-900 mb-2">Order Placed!</Text>
                         <Text className="text-gray-500 text-center">Your order has been placed successfully.</Text>
                     </View>

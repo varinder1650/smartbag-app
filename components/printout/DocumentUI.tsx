@@ -7,8 +7,8 @@ import UploadProgressBar from "./UploadProgressBar";
 type Props = {
     documents: UploadedDocument[];
     numberOfPages: number;
-    copies: number;
-    setCopies: (v: number) => void;
+    copies: string;
+    setCopies: (v: string) => void;
     paperSize: 'A4' | 'A3' | 'Legal';
     setPaperSize: (v: any) => void;
     onUpload: () => void;
@@ -108,11 +108,8 @@ export default function DocumentUI({
             <FormCard title="Number of Copies">
                 <TextInput
                     keyboardType="number-pad"
-                    value={String(copies)}
-                    onChangeText={(text) => {
-                        const n = parseInt(text, 10);
-                        setCopies(isNaN(n) || n < 1 ? 1 : n);
-                    }}
+                    value={copies}
+                    onChangeText={setCopies}
                     className="border border-gray-200 rounded-xl px-4 py-3"
                     placeholder="Enter number of copies"
                 />

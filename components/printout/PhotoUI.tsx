@@ -8,8 +8,8 @@ type Props = {
     photos: UploadedPhoto[];
     photoSize: "Passport" | "4x6" | "5x7";
     setPhotoSize: (v: "Passport" | "4x6" | "5x7") => void;
-    copies: number;
-    setCopies: (v: number) => void;
+    copies: string;
+    setCopies: (v: string) => void;
     onUpload: () => void;
     onDelete: (id: string) => void;
     uploadProgress: number;
@@ -145,16 +145,13 @@ export default function PhotoUI({
             <FormCard title="Number of Copies">
                 <TextInput
                     keyboardType="number-pad"
-                    value={String(copies)}
-                    onChangeText={(text) => {
-                        const n = parseInt(text, 10);
-                        setCopies(isNaN(n) || n < 1 ? 1 : n);
-                    }}
+                    value={copies}
+                    onChangeText={setCopies}
                     className="border border-gray-200 rounded-xl px-4 py-3"
                     placeholder="Enter number of copies per photo"
                 />
                 <Text className="text-xs text-gray-500 mt-2">
-                    Each photo will be printed {copies} {copies === 1 ? 'time' : 'times'}
+                    Each photo will be printed {copies} {Number(copies) === 1 ? 'time' : 'times'}
                 </Text>
             </FormCard>
         </>

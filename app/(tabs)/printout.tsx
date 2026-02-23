@@ -37,7 +37,7 @@ export default function PrintoutScreen() {
     const [documents, setDocuments] = useState<UploadedDocument[]>([]);
     const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
 
-    const [copies, setCopies] = useState(1);
+    const [copies, setCopies] = useState("1");
     const [paperSize, setPaperSize] = useState<"A4" | "A3" | "Legal">("A4");
     const [photoSize, setPhotoSize] = useState<"Passport" | "4x6" | "5x7">(
         "Passport"
@@ -201,11 +201,12 @@ export default function PrintoutScreen() {
     };
 
     const price = useMemo(() => {
-        if (copies <= 0) return 0;
+        const numCopies = parseInt(copies) || 0;
+        if (numCopies <= 0) return 0;
 
         return printType === "document"
-            ? calculateDocumentPrice(numberOfPages, copies, colorPrinting, paperSize, printoutFee)
-            : calculatePhotoPrice(photoSize, copies, printoutFee);
+            ? calculateDocumentPrice(numberOfPages, numCopies, colorPrinting, paperSize, printoutFee)
+            : calculatePhotoPrice(photoSize, numCopies, printoutFee);
     }, [printType, numberOfPages, copies, colorPrinting, paperSize, photoSize, printoutFee]);
 
     const handleAddToCart = () => {
@@ -219,7 +220,8 @@ export default function PrintoutScreen() {
             return;
         }
 
-        if (copies <= 0) {
+        const numCopies = parseInt(copies) || 0;
+        if (numCopies <= 0) {
             Alert.alert("Error", "Invalid number of copies");
             return;
         }
@@ -235,7 +237,7 @@ export default function PrintoutScreen() {
                 documents,
                 photos,
                 numberOfPages,
-                copies: Number(copies),
+                copies: numCopies,
                 paperSize,
                 photoSize,
                 colorPrinting,

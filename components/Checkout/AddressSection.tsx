@@ -25,6 +25,12 @@ export default function AddressSection({
 
             {defaultAddress ? (
                 <View className="gap-1">
+                    {defaultAddress.name ? (
+                        <Text className="text-gray-900 font-bold mb-1">
+                            {defaultAddress.name}
+                        </Text>
+                    ) : null}
+
                     <Text className="text-gray-900 font-medium">
                         {defaultAddress.street}
                     </Text>

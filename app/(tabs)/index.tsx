@@ -11,13 +11,13 @@ import { AppDispatch } from "@/store/store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { useDispatch } from "react-redux";
 
 export default function App() {
   const [selectCategory, setSelectCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const { categories, ProductsByCategory, loading, loadMore, pagination } = useProducts(selectCategory, searchQuery);
+  const { categories, ProductsByCategory, loading, loadMore, pagination, refreshing, refresh } = useProducts(selectCategory, searchQuery);
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -45,7 +45,15 @@ export default function App() {
         selectedCategory={selectCategory}
         onSelectCategory={(categoryId) => setSelectCategory(categoryId)}
       />
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            colors={["#FF6B35"]} // Optionally match the primary color
+          />
+        }
+      >
         <ShopStatusBanner />
 
         {ProductsByCategory.map((category) =>

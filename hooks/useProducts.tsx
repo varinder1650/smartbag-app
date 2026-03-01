@@ -10,30 +10,25 @@ export function useProducts(
     const [categories, setCategories] = useState<Category[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState<Pagination | null>(null);
 
     const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
     const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    useEffect(() => {
-        let cancelled = false;
-        const loadCategories = async () => {
-            try {
-                const data = await fetchCategories();
-                if (!cancelled) {
-                    setCategories(data);
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    console.log("Failed to load categories:", err);
-                }
-            } finally {
-                cancelled = true;
-            }
+    const loadCategories = useCallback(async () => {
+        try {
+            const data = await fetchCategories();
+            setCategories(data);
+        } catch (err) {
+            console.log("Failed to load categories:", err);
         }
-        loadCategories();
     }, []);
+
+    useEffect(() => {
+        loadCategories();
+    }, [loadCategories]);
 
     useEffect(() => {
         if (searchTimeoutRef.current) {
@@ -49,13 +44,6 @@ export function useProducts(
             }
         };
     }, [searchQuery]);
-
-    useEffect(() => {
-        setProducts([]);
-        setPage(1);
-        loadProducts(1, true);
-        // console.log(products)
-    }, [selectedCategory, debouncedSearch]);
 
     const loadProducts = useCallback(
         async (pageToLoad = 1, reset = false) => {
@@ -90,10 +78,29 @@ export function useProducts(
         [debouncedSearch, selectedCategory, loading]
     );
 
+    useEffect(() => {
+        setProducts([]);
+        setPage(1);
+        loadProducts(1, true);
+    }, [selectedCategory, debouncedSearch]); // Using selectedCategory and debouncedSearch, loadProducts is called but we shouldn't pass it as dependency correctly without issues. Wait, loadProducts depends on loading, which changes. This might cause loops depending on the dependency.
+    // In original code, loadProducts wasn't in dependency array.
+
     const loadMore = () => {
         if (!pagination?.hasNextPage || loading) return;
         loadProducts(page + 1);
     };
+
+    const refresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            await Promise.all([
+                loadCategories(),
+                loadProducts(1, true)
+            ]);
+        } finally {
+            setRefreshing(false);
+        }
+    }, [loadCategories, loadProducts]);
 
     const ProductsByCategory = useMemo(() => {
         if (selectedCategory) {
@@ -115,10 +122,13 @@ export function useProducts(
             ),
         }));
     }, [categories, products, selectedCategory]);
+
     return {
         categories,
         ProductsByCategory,
         loading,
+        refreshing,
+        refresh,
         loadMore,
         pagination,
     };

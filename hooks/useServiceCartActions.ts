@@ -1,3 +1,4 @@
+import { syncAddServiceToCart } from "@/slices/cart.thunks";
 import { addServiceToCart } from "@/slices/cartSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store/store";
@@ -36,9 +37,13 @@ export function useServiceCartActions() {
             quantity: 1, // Services are always quantity 1
             serviceType: 'porter',
             serviceDetails: details,
-        };
+        } as any;
 
-        dispatch(addServiceToCart({ mode, item: serviceItem }));
+        if (mode === "user") {
+            dispatch(syncAddServiceToCart(serviceItem));
+        } else {
+            dispatch(addServiceToCart({ mode, item: serviceItem }));
+        }
         return true;
     };
 
@@ -109,12 +114,16 @@ export function useServiceCartActions() {
                 documents: details.documents || [],
                 photos: details.photos || [],
             },
-        };
+        } as any;
 
         console.log("=== Service Item Created ===");
         console.log(JSON.stringify(serviceItem, null, 2));
 
-        dispatch(addServiceToCart({ mode, item: serviceItem }));
+        if (mode === "user") {
+            dispatch(syncAddServiceToCart(serviceItem));
+        } else {
+            dispatch(addServiceToCart({ mode, item: serviceItem }));
+        }
         return true;
     };
 

@@ -1,6 +1,6 @@
 import { saveAddress } from "@/slices/addressSlice";
 import { useAppDispatch } from "@/store/hooks";
-import { Address, AddressEdit } from "@/types/address.types";
+import { AddressEdit } from "@/types/address.types";
 import api from "@/utils/client";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
@@ -41,6 +41,7 @@ export default function AddressModal({
 
     const [form, setForm] = useState<AddressEdit>({
         label: "",
+        name: "",
         street: "",
         city: "",
         state: "",
@@ -68,6 +69,7 @@ export default function AddressModal({
         } else {
             setForm({
                 label: "",
+                name: "",
                 street: "",
                 city: "",
                 state: "",
@@ -163,7 +165,7 @@ export default function AddressModal({
         }
     };
 
-    const handleChange = (key: keyof Address, value: string) => {
+    const handleChange = (key: keyof AddressEdit, value: string) => {
         setForm({ ...form, [key]: value });
 
         // Trigger validation when pincode changes
@@ -185,7 +187,7 @@ export default function AddressModal({
     };
 
     const handleSave = () => {
-        if (!form.label || !form.street || !form.city || !form.state || !form.pincode || !form.mobile_number) {
+        if (!form.label || !form.name || !form.street || !form.city || !form.state || !form.pincode || !form.mobile_number) {
             Alert.alert("Missing Information", "Please fill all the fields");
             return;
         }
@@ -204,6 +206,7 @@ export default function AddressModal({
 
     const isSubmitDisabled =
         !form.label ||
+        !form.name ||
         !form.street ||
         !form.city ||
         !form.state ||
@@ -213,6 +216,7 @@ export default function AddressModal({
         !pincodeValidation.isActive;
 
     const fieldConfigs = [
+        { key: "name", placeholder: "Full Name", icon: "person-outline", keyboard: "default" },
         { key: "street", placeholder: "Street Address", icon: "home-outline", keyboard: "default" },
         {
             key: "pincode",

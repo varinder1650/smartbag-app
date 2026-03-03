@@ -145,42 +145,56 @@ export default function Notifications() {
                             onSwipeableOpen={() => markAsRead(item.id)}
                             containerStyle={{ overflow: 'visible' }}
                         >
-                            <View className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-200">
-                                {/* Header */}
-                                <View className="flex-row items-center justify-between mb-2">
-                                    <Text className="text-gray-900 font-semibold text-base flex-1 mr-2">
-                                        {item.title}
-                                    </Text>
-
-                                    {!item.read && (
-                                        <View className="w-2 h-2 bg-primary rounded-full" />
-                                    )}
-                                </View>
-
-                                {/* Message */}
-                                <Text className="text-gray-600 text-sm leading-5 mb-2">
-                                    {item.message}
-                                </Text>
-
-                                {/* Footer */}
-                                <View className="flex-row items-center justify-between">
-                                    <Text className="text-gray-400 text-xs">
-                                        {new Date(item.created_at).toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    </Text>
-
-                                    {item.order_id && (
-                                        <Text className="text-gray-400 text-xs">
-                                            #{item.order_id}
+                            <Pressable
+                                onPress={() => {
+                                    if (item.order_id) {
+                                        if (!item.read) {
+                                            markAsRead(item.id);
+                                        }
+                                        router.push({
+                                            pathname: "/order-tracking",
+                                            params: { orderId: item.order_id }
+                                        });
+                                    }
+                                }}
+                            >
+                                <View className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-200">
+                                    {/* Header */}
+                                    <View className="flex-row items-center justify-between mb-2">
+                                        <Text className="text-gray-900 font-semibold text-base flex-1 mr-2">
+                                            {item.title}
                                         </Text>
-                                    )}
+
+                                        {!item.read && (
+                                            <View className="w-2 h-2 bg-primary rounded-full" />
+                                        )}
+                                    </View>
+
+                                    {/* Message */}
+                                    <Text className="text-gray-600 text-sm leading-5 mb-2">
+                                        {item.message}
+                                    </Text>
+
+                                    {/* Footer */}
+                                    <View className="flex-row items-center justify-between mt-2">
+                                        <Text className="text-gray-400 text-xs">
+                                            {new Date(item.created_at).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </Text>
+
+                                        {item.order_id && (
+                                            <Text className="text-gray-400 text-xs font-medium">
+                                                #{item.order_id.substring(0, 8)}...
+                                            </Text>
+                                        )}
+                                    </View>
                                 </View>
-                            </View>
+                            </Pressable>
                         </Swipeable>
                     )}
                 />

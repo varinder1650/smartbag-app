@@ -15,6 +15,7 @@ type Props = Address & {
 export const AddressCard = ({
     _id,
     label,
+    name,
     street,
     city,
     state,
@@ -31,6 +32,7 @@ export const AddressCard = ({
     const fullAddress: Address = {
         _id,
         label,
+        name,
         street,
         city,
         state,
@@ -65,7 +67,12 @@ export const AddressCard = ({
         >
             {/* Header */}
             <View className="flex-row justify-between items-center">
-                <Text className="font-semibold">{label}</Text>
+                <View className="flex-row items-center">
+                    <Text className="font-semibold text-gray-900">{label}</Text>
+                    {name ? (
+                        <Text className="text-gray-500 ml-2 text-sm">• {name}</Text>
+                    ) : null}
+                </View>
 
                 <View className="flex-row gap-3">
                     <Pressable onPress={onEdit}>

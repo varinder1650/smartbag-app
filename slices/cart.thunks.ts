@@ -93,8 +93,28 @@ function convertToCartItem(backendItem: BackendCartItem): CartItem {
 export const syncAddToCart = createAsyncThunk<CartItem, string>(
     "cart/syncAdd",
     async (id: string) => {
-        const { data } = await api.post<BackendCartItem>("/cart/add", { id, quantity: 1 });
-        return convertToCartItem(data);
+        const { data } = await api.post<any>("/cart/add", { id, quantity: 1 });
+        return convertToCartItem(data.cart_item);
+    }
+);
+
+export const syncAddServiceToCart = createAsyncThunk<CartItem, CartItem>(
+    "cart/syncAddService",
+    async (item: CartItem) => {
+        const payload = {
+            serviceType: item.serviceType,
+            serviceName: item.name,
+            servicePrice: item.selling_price,
+            serviceDetails: (item as any).serviceDetails,
+        };
+        const { data } = await api.post<any>("/cart/add", payload);
+
+        // Ensure the ID maps back to the database _id so removals work
+        return {
+            ...item,
+            id: data.cart_item._id || item.id,
+            cartItemId: data.cart_item._id,
+        };
     }
 );
 
@@ -139,12 +159,12 @@ export const syncUserCart = createAsyncThunk<CartItem[]>(
                 productId: item.productId,
                 quantity: item.quantity,
                 product: {
-                    id: item.product?.id || item.id,
-                    name: item.product?.name || item.name,
-                    price: item.product?.price || item.price,
-                    selling_price: item.product?.selling_price || item.selling_price,
-                    actual_price: item.product?.actual_price || item.actual_price,
-                    discount: item.product?.discount || item.discount,
+                    id: item.product?.id || item.id || item._id,
+                    name: item.product?.name || item.name || item.serviceName,
+                    price: item.product?.price || item.price || item.servicePrice,
+                    selling_price: item.product?.selling_price || item.selling_price || item.servicePrice,
+                    actual_price: item.product?.actual_price || item.actual_price || item.servicePrice,
+                    discount: item.product?.discount || item.discount || 0,
                     stock: item.product?.stock || item.stock,
                     images: item.product?.images || item.images,
                     serviceType: item.product?.serviceType || item.serviceType || 'product',

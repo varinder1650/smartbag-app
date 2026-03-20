@@ -738,7 +738,7 @@ export default function OrderTrackingScreen() {
                                                 {isPhoto ? 'Photo Print' : 'Document Print'}
                                             </Text>
                                             <Text className="text-purple-700 text-sm font-semibold">
-                                                {serviceData?.pages || 0} {isPhoto ? 'photos' : 'pages'} × {serviceData?.copies || 1} {serviceData?.copies === 1 ? 'copy' : 'copies'}
+                                                {serviceData?.pages || (serviceData as any)?.numberOfPages || 1} {isPhoto ? 'photos' : 'pages'} × {serviceData?.copies || 1} {serviceData?.copies === 1 ? 'copy' : 'copies'}
                                             </Text>
                                         </View>
                                     </View>

@@ -12,7 +12,7 @@ export function useServiceCartActions() {
     const mode: "guest" | "user" = isAuthenticated ? "user" : "guest";
     const cartItems = useSelector((state: RootState) => state.cart[mode].items);
 
-    const addPorterService = (
+    const addPorterService = async (
         details: PorterServiceDetails,
         selling_price: number
     ) => {
@@ -40,14 +40,18 @@ export function useServiceCartActions() {
         } as any;
 
         if (mode === "user") {
-            dispatch(syncAddServiceToCart(serviceItem));
+            const result = await dispatch(syncAddServiceToCart(serviceItem));
+            if (syncAddServiceToCart.rejected.match(result)) {
+                Alert.alert("Error", "Failed to add porter service to cart. Please try again.");
+                return false;
+            }
         } else {
             dispatch(addServiceToCart({ mode, item: serviceItem }));
         }
         return true;
     };
 
-    const addPrintoutService = (
+    const addPrintoutService = async (
         details: PrintoutServiceDetails,
         selling_price: number
     ) => {
@@ -120,7 +124,11 @@ export function useServiceCartActions() {
         console.log(JSON.stringify(serviceItem, null, 2));
 
         if (mode === "user") {
-            dispatch(syncAddServiceToCart(serviceItem));
+            const result = await dispatch(syncAddServiceToCart(serviceItem));
+            if (syncAddServiceToCart.rejected.match(result)) {
+                Alert.alert("Error", "Failed to add printout service to cart. Please try again.");
+                return false;
+            }
         } else {
             dispatch(addServiceToCart({ mode, item: serviceItem }));
         }

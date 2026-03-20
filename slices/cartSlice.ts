@@ -77,12 +77,19 @@ const cartSlice = createSlice({
         });
         state.user.items = newItems as any;
       })
+      .addCase(syncAddServiceToCart.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(syncAddServiceToCart.fulfilled, (state, action) => {
         const item = action.payload;
         state.user.items[item.id] = {
           ...item,
           quantity: 1,
         } as Draft<CartItem>;
+        state.loading = false;
+      })
+      .addCase(syncAddServiceToCart.rejected, (state) => {
+        state.loading = false;
       })
       .addCase(syncClearCart.pending, (state) => {
         state.loading = true;

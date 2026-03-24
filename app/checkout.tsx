@@ -7,6 +7,7 @@ import SafeView from "@/components/SafeView";
 import TitleBar from "@/components/TitleBar";
 import { selectCartItems, selectCartSubtotal } from "@/slices/cartSelectors";
 import { clearCartLocal } from "@/slices/cartSlice";
+import { clearCheckoutAddress } from "@/slices/checkoutAddressSlice";
 import { RootState } from "@/store/store";
 import { selectDefaultAddress } from "@/utils/addressSelector";
 import api from "@/utils/client";
@@ -37,6 +38,8 @@ export default function CheckoutScreen() {
     const cartItems = useSelector(selectCartItems);
     const subtotal = useSelector(selectCartSubtotal);
     const defaultAddress = useSelector(selectDefaultAddress);
+    const checkoutSelectedAddress = useSelector((state: RootState) => state.checkoutAddress.selectedAddress);
+    const deliveryAddress = checkoutSelectedAddress ?? defaultAddress;
     const deliveryFeeConfig = useSelector((state: RootState) => state.price.deliveryFee);
     const appFeeConfig = useSelector((state: RootState) => state.price.appFee);
 
@@ -77,7 +80,7 @@ export default function CheckoutScreen() {
     }, [backendTotal, subtotal, deliveryFeeAmount, appFeeAmount, tip, discount]);
 
     const validateOrder = (): string | null => {
-        if (!defaultAddress) {
+        if (!deliveryAddress) {
             return "Please select a delivery address";
         }
 
@@ -284,6 +287,7 @@ export default function CheckoutScreen() {
             if (response.data) {
                 dispatch(clearCartLocal("user"));
                 dispatch(clearCartLocal("guest"));
+                dispatch(clearCheckoutAddress());
 
                 setShowSuccess(true);
                 // Removed router.replace here to allow the success modal to show
@@ -309,7 +313,7 @@ export default function CheckoutScreen() {
         try {
             const orderPayload = {
                 items: buildOrderItems(),
-                delivery_address: defaultAddress,
+                delivery_address: deliveryAddress,
                 tip_amount: tip,
                 promo_code: appliedPromo?.code || null,
             };
@@ -420,7 +424,7 @@ export default function CheckoutScreen() {
             <TitleBar title="Checkout" subtitle="" />
 
             <ScrollView className="flex-1 px-4">
-                <AddressSection defaultAddress={defaultAddress} />
+                <AddressSection defaultAddress={deliveryAddress} />
                 <ItemsList cartItems={cartItems} />
                 <TipSection tip={tip} setTip={setTip} />
 

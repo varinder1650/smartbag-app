@@ -7,6 +7,7 @@ export interface AppliedPromo {
     code: string;
     discount_type: "percentage" | "fixed";
     discount_value: number;
+    max_discount_amount?: number;
 }
 
 interface PromoCodeSectionProps {
@@ -98,10 +99,15 @@ export default function PromoCodeSection({
             const promoData: AppliedPromo = res.data.promocode;
 
             // Compute discount immediately
-            const computedDiscount =
+            let computedDiscount =
                 promoData.discount_type === "percentage"
                     ? (orderAmount * promoData.discount_value) / 100
                     : promoData.discount_value;
+
+            // Apply max discount cap if set
+            if (promoData.max_discount_amount) {
+                computedDiscount = Math.min(computedDiscount, promoData.max_discount_amount);
+            }
 
             // Set both local and parent state
             setDiscountAmount(computedDiscount);

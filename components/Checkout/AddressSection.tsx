@@ -14,7 +14,7 @@ export default function AddressSection({
                 <Text className="font-bold text-lg">Delivery Address</Text>
 
                 <Pressable
-                    onPress={() => router.push("/address")}
+                    onPress={() => router.push("/address?mode=select&addressType=checkout")}
                     className="px-4 py-1.5 bg-primary/10 rounded-full"
                 >
                     <Text className="text-primary text-sm font-semibold">

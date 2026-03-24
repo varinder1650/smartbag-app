@@ -116,7 +116,9 @@ export const signInWithGoogle = async (): Promise<GoogleSignInResult> => {
 
 export const signOutFromGoogle = async (): Promise<void> => {
     try {
-        // Check if user is signed in by trying to get current user
+        // Ensure Google Sign-In is configured before attempting sign out
+        configureGoogleSignIn();
+
         const currentUser = await GoogleSignin.getCurrentUser();
 
         if (currentUser) {
@@ -124,8 +126,7 @@ export const signOutFromGoogle = async (): Promise<void> => {
             logger.info('Signed out from Google');
         }
     } catch (error) {
-        // User not signed in or error getting user
-        logger.error('Sign out failed', error);
+        // User not signed in via Google or error - safe to ignore
     }
 };
 

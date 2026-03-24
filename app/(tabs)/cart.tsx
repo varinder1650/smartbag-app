@@ -1,7 +1,8 @@
 import { CartProductItem } from "@/components/cartProductItem";
 import SafeView from "@/components/SafeView";
+import { syncClearCart, syncRemoveItem } from "@/slices/cart.thunks";
 import { selectCartItems, selectCartSubtotal, selectCartTotal } from "@/slices/cartSelectors";
-import { clearCartLocal, decreaseQty, syncClearCart } from "@/slices/cartSlice";
+import { clearCartLocal, decreaseQty } from "@/slices/cartSlice";
 import { RootState } from "@/store/store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -147,7 +148,12 @@ export default function CartScreen() {
 
                           {/* Remove Button */}
                           <Pressable
-                            onPress={() => dispatch(decreaseQty({ id: item.id, mode }))}
+                            onPress={() => {
+                              dispatch(decreaseQty({ id: item.id, mode }));
+                              if (mode === "user") {
+                                dispatch(syncRemoveItem(item.cartItemId || item.id) as any);
+                              }
+                            }}
                             className="bg-red-50 w-10 h-10 rounded-full items-center justify-center"
                           >
                             <Ionicons name="trash-outline" size={20} color="#EF4444" />

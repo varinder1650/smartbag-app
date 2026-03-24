@@ -1,3 +1,4 @@
+import { syncAddServiceToCart } from "@/slices/cart.thunks";
 import { addServiceToCart } from "@/slices/cartSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store/store";
@@ -11,7 +12,7 @@ export function useServiceCartActions() {
     const mode: "guest" | "user" = isAuthenticated ? "user" : "guest";
     const cartItems = useSelector((state: RootState) => state.cart[mode].items);
 
-    const addPorterService = (
+    const addPorterService = async (
         details: PorterServiceDetails,
         selling_price: number
     ) => {
@@ -36,13 +37,21 @@ export function useServiceCartActions() {
             quantity: 1, // Services are always quantity 1
             serviceType: 'porter',
             serviceDetails: details,
-        };
+        } as any;
 
-        dispatch(addServiceToCart({ mode, item: serviceItem }));
+        if (mode === "user") {
+            const result = await dispatch(syncAddServiceToCart(serviceItem));
+            if (syncAddServiceToCart.rejected.match(result)) {
+                Alert.alert("Error", "Failed to add porter service to cart. Please try again.");
+                return false;
+            }
+        } else {
+            dispatch(addServiceToCart({ mode, item: serviceItem }));
+        }
         return true;
     };
 
-    const addPrintoutService = (
+    const addPrintoutService = async (
         details: PrintoutServiceDetails,
         selling_price: number
     ) => {
@@ -109,12 +118,20 @@ export function useServiceCartActions() {
                 documents: details.documents || [],
                 photos: details.photos || [],
             },
-        };
+        } as any;
 
         console.log("=== Service Item Created ===");
         console.log(JSON.stringify(serviceItem, null, 2));
 
-        dispatch(addServiceToCart({ mode, item: serviceItem }));
+        if (mode === "user") {
+            const result = await dispatch(syncAddServiceToCart(serviceItem));
+            if (syncAddServiceToCart.rejected.match(result)) {
+                Alert.alert("Error", "Failed to add printout service to cart. Please try again.");
+                return false;
+            }
+        } else {
+            dispatch(addServiceToCart({ mode, item: serviceItem }));
+        }
         return true;
     };
 

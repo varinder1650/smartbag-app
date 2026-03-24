@@ -15,7 +15,9 @@ const log = {
 };
 
 const api = axios.create({
-    baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000',
+    baseURL: __DEV__
+        ? process.env.EXPO_PUBLIC_API_URL_DEV || 'http://10.0.2.2:8000/api'
+        : process.env.EXPO_PUBLIC_API_URL || 'http://195.35.6.222/api',
     timeout: 15000,
     headers: {
         "Content-Type": "application/json",
@@ -117,7 +119,7 @@ api.interceptors.response.use(
                 }
 
                 const { data } = await axios.post(
-                    `${process.env.EXPO_PUBLIC_API_URL}/auth/refresh`,
+                    `${api.defaults.baseURL}/auth/refresh`,
                     { refresh_token: refreshToken },
                     { timeout: 10000 }
                 );

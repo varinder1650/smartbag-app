@@ -1,7 +1,7 @@
 import { CartItem } from "@/types/cart.types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { Draft } from "immer";
-import { mergeGuestCart, syncClearCart, syncRemoveItem, syncUpdateQty, syncUserCart } from "./cart.thunks";
+import { mergeGuestCart, syncAddServiceToCart, syncClearCart, syncRemoveItem, syncUpdateQty, syncUserCart } from "./cart.thunks";
 
 export interface CartState {
   user: { items: Record<string, CartItem> };
@@ -77,6 +77,20 @@ const cartSlice = createSlice({
         });
         state.user.items = newItems as any;
       })
+      .addCase(syncAddServiceToCart.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(syncAddServiceToCart.fulfilled, (state, action) => {
+        const item = action.payload;
+        state.user.items[item.id] = {
+          ...item,
+          quantity: 1,
+        } as Draft<CartItem>;
+        state.loading = false;
+      })
+      .addCase(syncAddServiceToCart.rejected, (state) => {
+        state.loading = false;
+      })
       .addCase(syncClearCart.pending, (state) => {
         state.loading = true;
       })
@@ -91,5 +105,5 @@ const cartSlice = createSlice({
 });
 
 export const { addToCart, increaseQty, decreaseQty, clearCartLocal, addServiceToCart } = cartSlice.actions;
-export { mergeGuestCart, syncClearCart };
+export { mergeGuestCart, syncAddServiceToCart, syncClearCart };
 export default cartSlice.reducer;

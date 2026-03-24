@@ -93,8 +93,36 @@ function convertToCartItem(backendItem: BackendCartItem): CartItem {
 export const syncAddToCart = createAsyncThunk<CartItem, string>(
     "cart/syncAdd",
     async (id: string) => {
-        const { data } = await api.post<BackendCartItem>("/cart/add", { id, quantity: 1 });
-        return convertToCartItem(data);
+        const { data } = await api.post<any>("/cart/add", { id, quantity: 1 });
+        return convertToCartItem(data.cart_item);
+    }
+);
+
+export const syncAddServiceToCart = createAsyncThunk<CartItem, CartItem, { rejectValue: string }>(
+    "cart/syncAddService",
+    async (item: CartItem, { rejectWithValue }) => {
+        try {
+            const payload = {
+                serviceType: item.serviceType,
+                serviceName: item.name,
+                servicePrice: item.selling_price,
+                serviceDetails: (item as any).serviceDetails,
+            };
+            console.log("[syncAddServiceToCart] sending:", JSON.stringify(payload).slice(0, 500));
+            const { data } = await api.post<any>("/cart/add", payload);
+            console.log("[syncAddServiceToCart] response:", JSON.stringify(data).slice(0, 500));
+
+            // Ensure the ID maps back to the database _id so removals work
+            return {
+                ...item,
+                id: data.cart_item._id || item.id,
+                cartItemId: data.cart_item._id,
+            };
+        } catch (error: any) {
+            const message = error?.response?.data?.detail || error?.response?.data?.message || error.message || "Failed to add service to cart";
+            console.error("[syncAddServiceToCart] FAILED:", error?.response?.status, error?.response?.data || error.message);
+            return rejectWithValue(message);
+        }
     }
 );
 
@@ -139,12 +167,12 @@ export const syncUserCart = createAsyncThunk<CartItem[]>(
                 productId: item.productId,
                 quantity: item.quantity,
                 product: {
-                    id: item.product?.id || item.id,
-                    name: item.product?.name || item.name,
-                    price: item.product?.price || item.price,
-                    selling_price: item.product?.selling_price || item.selling_price,
-                    actual_price: item.product?.actual_price || item.actual_price,
-                    discount: item.product?.discount || item.discount,
+                    id: item.product?.id || item.id || item._id,
+                    name: item.product?.name || item.name || item.serviceName,
+                    price: item.product?.price || item.price || item.servicePrice,
+                    selling_price: item.product?.selling_price || item.selling_price || item.servicePrice,
+                    actual_price: item.product?.actual_price || item.actual_price || item.servicePrice,
+                    discount: item.product?.discount || item.discount || 0,
                     stock: item.product?.stock || item.stock,
                     images: item.product?.images || item.images,
                     serviceType: item.product?.serviceType || item.serviceType || 'product',
@@ -164,13 +192,29 @@ export const mergeGuestCart = createAsyncThunk<void, CartItem[], { dispatch: any
     async (items, { dispatch }) => {
         if (!items || items.length === 0) return;
 
-        const payload = items.map((i) => ({
-            productId: i.id,
-            quantity: i.quantity ?? 1,
-            serviceType: i.serviceType,
-        }));
+        const products = items.filter(i => i.serviceType === 'product');
+        if (products.length > 0) {
+            const payload = products.map((i) => ({
+                id: i.id, // backend CartRequest uses id
+                productId: i.id, 
+                quantity: i.quantity ?? 1,
+                serviceType: i.serviceType,
+            }));
+            await api.post("/cart/batch-add", payload);
+        }
 
-        await api.post("/cart/batch-add", payload);
+        const services = items.filter(i => i.serviceType !== 'product');
+        if (services.length > 0) {
+            for (const item of services) {
+                const payload = {
+                    serviceType: item.serviceType,
+                    serviceName: item.name,
+                    servicePrice: item.selling_price || (item as any).price || 0,
+                    serviceDetails: (item as any).serviceDetails || {},
+                };
+                await api.post("/cart/add", payload);
+            }
+        }
 
         // Clear guest cart after merge
         dispatch({ type: "cart/clearCartLocal", payload: "guest" });

@@ -81,18 +81,19 @@ export default function Help() {
         <SafeView className="flex-1 bg-white">
             <TitleBar title="Help & Support" subtitle="" />
 
-            <ContactUsSection
-                phoneNumber="9463256364"
-                email="smartbag.help@gmail.com"
-                whatsappNumber="9463256364"
-            />
-
             <FlatList
                 data={tickets}
                 keyExtractor={(item) => item.id}
                 renderItem={renderTicket}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
+                ListHeaderComponent={
+                    <ContactUsSection
+                        phoneNumber="9463256364"
+                        email="smartbag.help@gmail.com"
+                        whatsappNumber="9463256364"
+                    />
+                }
                 ListEmptyComponent={
                     <View className="flex-1 justify-center items-center mt-12">
                         {loading ? (

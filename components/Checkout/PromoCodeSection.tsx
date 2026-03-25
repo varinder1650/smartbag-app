@@ -69,6 +69,9 @@ export default function PromoCodeSection({
                 computedDiscount = Math.min(computedDiscount, promoData.max_discount_amount);
             }
 
+            // Round to 2 decimal places to avoid floating-point artifacts
+            computedDiscount = Math.round(computedDiscount * 100) / 100;
+
             // Set both local and parent state
             setDiscountAmount(computedDiscount);
             setDiscount(computedDiscount);

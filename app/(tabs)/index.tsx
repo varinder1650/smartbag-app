@@ -6,32 +6,29 @@ import TopBar from "@/components/Home/TopBar";
 import SafeView from "@/components/SafeView";
 import ShopStatusBanner from "@/components/ShopStatusBanner";
 import { useProducts } from "@/hooks/useProducts";
-import { fetchShopStatus } from "@/slices/Shopstatusslice";
-import { AppDispatch } from "@/store/store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
-import { useDispatch } from "react-redux";
 
 export default function App() {
   const [selectCategory, setSelectCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const { categories, ProductsByCategory, loading, loadMore, pagination, refreshing, refresh } = useProducts(selectCategory, searchQuery);
 
-  const dispatch = useDispatch<AppDispatch>();
+  // Shop status polling is handled globally in _layout.tsx (every 2 min)
 
-  useEffect(() => {
-    // Fetch shop status on mount
-    dispatch(fetchShopStatus());
+  const handleSelectCategory = useCallback((categoryId: string | null) => {
+    setSelectCategory(categoryId);
+  }, []);
 
-    // Refresh every 2 minutes
-    const interval = setInterval(() => {
-      dispatch(fetchShopStatus());
-    }, 120000); // 2 minutes
+  const handleNavigateRequest = useCallback(() => {
+    router.push("/requestProduct");
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [dispatch]);
+  const handleNavigatePorter = useCallback(() => {
+    router.push("/porter");
+  }, []);
 
   return (
     <SafeView className="flex-1 bg-white">
@@ -43,7 +40,7 @@ export default function App() {
       <CategoriesRow
         categories={categories}
         selectedCategory={selectCategory}
-        onSelectCategory={(categoryId) => setSelectCategory(categoryId)}
+        onSelectCategory={handleSelectCategory}
       />
       <ScrollView
         refreshControl={
@@ -80,7 +77,7 @@ export default function App() {
         {/* Extra Actions */}
         <View className="flex-row px-4 gap-4 mt-4 mb-12">
           <Pressable
-            onPress={() => router.push("/requestProduct")}
+            onPress={handleNavigateRequest}
             className="flex-1 bg-[#FF6B35] rounded-2xl py-4 items-center justify-center"
           >
             <Ionicons name="add-circle-outline" size={24} color="white" />
@@ -88,7 +85,7 @@ export default function App() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/porter")}
+            onPress={handleNavigatePorter}
             className="flex-1 bg-[#34C759] rounded-2xl py-4 items-center justify-center"
           >
             <Ionicons name="bicycle-outline" size={24} color="white" />

@@ -209,7 +209,7 @@ export default function PrintoutScreen() {
             : calculatePhotoPrice(photoSize, numCopies, printoutFee);
     }, [printType, numberOfPages, copies, colorPrinting, paperSize, photoSize, printoutFee]);
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (printType === "document" && documents.length === 0) {
             Alert.alert("Error", "Please upload at least one document");
             return;
@@ -231,7 +231,7 @@ export default function PrintoutScreen() {
             return;
         }
 
-        const success = addPrintoutService(
+        const success = await addPrintoutService(
             {
                 printType,
                 documents,

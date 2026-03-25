@@ -9,7 +9,7 @@ import priceReducer from '../slices/priceSlice';
 import { persistConfig } from './persistConfig';
 import { setStoreRef } from './storeRef';
 
-import shopStatusReducer from '../slices/Shopstatusslice';
+import shopStatusReducer from '../slices/shopStatusSlice';
 
 const persistCartReducer = persistReducer(
   persistConfig,

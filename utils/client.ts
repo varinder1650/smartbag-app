@@ -1,18 +1,12 @@
 import { getDispatch } from "@/store/storeRef";
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import { logger } from "./logger";
 import {
     clearTokens,
     getAccessToken,
     getRefreshToken,
     saveAccessToken
 } from "./tokenStorage";
-
-// Simple inline logger gated behind __DEV__
-const log = {
-    info: (msg: string) => { if (__DEV__) console.log('[INFO]', msg); },
-    warn: (msg: string) => { if (__DEV__) console.warn('[WARN]', msg); },
-    error: (msg: string, err: any) => { if (__DEV__) console.error('[ERROR]', msg, err); },
-};
 
 const api = axios.create({
     baseURL: __DEV__
@@ -61,7 +55,7 @@ api.interceptors.request.use(
                 config.headers.Authorization = `Bearer ${token}`;
             }
         } catch (error) {
-            log.error('Token retrieval error', error);
+            logger.error('Token retrieval error', error instanceof Error ? error : new Error(String(error)));
         }
         return config;
     },
@@ -73,9 +67,10 @@ api.interceptors.response.use(
     async (error: AxiosError) => {
         const original = error.config as AxiosRequestConfig & { _retry?: boolean };
 
-        const isExcludedRoute = AUTH_EXCLUDED_ROUTES.some(path =>
-            original.url?.includes(path)
-        );
+        const isExcludedRoute = AUTH_EXCLUDED_ROUTES.some(route => {
+            const url = original.url || "";
+            return url === route || url.startsWith(route + "/") || url.startsWith(route + "?");
+        });
 
         if (
             error.response?.status === 401 &&

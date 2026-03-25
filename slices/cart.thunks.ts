@@ -205,7 +205,7 @@ export const mergeGuestCart = createAsyncThunk<void, CartItem[], { dispatch: any
 
         const services = items.filter(i => i.serviceType !== 'product');
         if (services.length > 0) {
-            await Promise.all(
+            const results = await Promise.allSettled(
                 services.map((item) => {
                     const payload = {
                         serviceType: item.serviceType,
@@ -216,6 +216,14 @@ export const mergeGuestCart = createAsyncThunk<void, CartItem[], { dispatch: any
                     return api.post("/cart/add", payload);
                 })
             );
+
+            const failures = results
+                .map((r, i) => (r.status === "rejected" ? services[i].name : null))
+                .filter(Boolean);
+
+            if (failures.length > 0 && __DEV__) {
+                console.warn(`Failed to merge ${failures.length} service(s):`, failures);
+            }
         }
 
         // Clear guest cart after merge

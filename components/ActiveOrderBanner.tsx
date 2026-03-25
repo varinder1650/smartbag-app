@@ -61,7 +61,7 @@ export default function ActiveOrderBanner() {
                 setOrders([]);
             }
         } catch (error) {
-            console.error("Failed to fetch active active orders:", error);
+            if (__DEV__) console.error("Failed to fetch active orders:", error);
             setIsVisible(false);
         }
     };

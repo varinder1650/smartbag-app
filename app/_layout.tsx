@@ -50,7 +50,7 @@ function RootLayoutWithProviders() {
           }
         }
       } catch (error) {
-        console.error("Error restoring session:", error);
+        if (__DEV__) console.error("Error restoring session:", error);
       } finally {
         if (mounted) {
           setInitialLoadComplete(true);
@@ -95,8 +95,7 @@ function RootLayoutWithProviders() {
     if (!isAuthenticated && !inAuthGroup) {
       redirectPath = "/(auth)/login";
     } else if (isAuthenticated && inAuthGroup && !requirePhone) {
-      console.log('🔍 Redirecting to:', '/(tabs)/index');
-      console.log('🔍 Current segments:', segments);
+      if (__DEV__) console.log('Redirecting to /(tabs), segments:', segments);
       redirectPath = "/(tabs)";
     } else if (isAuthenticated && requirePhone && segments[1] !== "require_phone") {
       redirectPath = "/(auth)/require_phone";

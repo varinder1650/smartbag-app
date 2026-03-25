@@ -117,18 +117,18 @@ export default function OrderTrackingScreen() {
 
             if (params.orderId) {
                 // Fetch specific order by ID
-                console.log("Fetching order by ID:", params.orderId);
+                if (__DEV__) console.log("Fetching order by ID:", params.orderId);
                 response = await api.get<ActiveOrder>(`/orders/${params.orderId}`);
             } else {
                 // Fetch active order
-                console.log("Fetching active order");
+                if (__DEV__) console.log("Fetching active order");
                 response = await api.get<ActiveOrder>("/orders/active");
-                console.log("Active order:", response.data);
+                if (__DEV__) console.log("Active order:", response.data);
             }
 
             if (response.data) {
                 setOrder(response.data);
-                console.log("Order set:", order);
+                if (__DEV__) console.log("Order set:", order);
                 // Show rating if delivered and not rated
                 if (response.data.order_status === "delivered" && !response.data.rating) {
                     setShowRating(true);
@@ -137,7 +137,7 @@ export default function OrderTrackingScreen() {
                 setOrder(null);
             }
         } catch (error: any) {
-            console.error("Failed to fetch order:", error);
+            if (__DEV__) console.error("Failed to fetch order:", error);
 
             // If order not found, show error
             if (error.response?.status === 404) {
@@ -326,9 +326,9 @@ export default function OrderTrackingScreen() {
     const handleCallPartner = () => {
         if (order?.delivery_partner?.phone) {
             const phoneNumber = `tel:${order.delivery_partner.phone}`;
-            Linking.openURL(phoneNumber).catch(err =>
-                console.error('Error opening dialer:', err)
-            );
+            Linking.openURL(phoneNumber).catch(err => {
+                if (__DEV__) console.error('Error opening dialer:', err);
+            });
         }
     };
 

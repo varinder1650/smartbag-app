@@ -22,7 +22,7 @@ export function useProducts(
             const data = await fetchCategories();
             setCategories(data);
         } catch (err) {
-            console.log("Failed to load categories:", err);
+            if (__DEV__) console.log("Failed to load categories:", err);
         }
     }, []);
 
@@ -70,7 +70,7 @@ export function useProducts(
                 setPagination(data.pagination);
                 setPage(pageToLoad);
             } catch (err) {
-                console.log("Failed to load products:", err);
+                if (__DEV__) console.log("Failed to load products:", err);
             } finally {
                 setLoading(false);
             }

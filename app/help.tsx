@@ -34,7 +34,7 @@ export default function Help() {
             const res = await api.get("/support/tickets");
             setTickets(res.data);
         } catch (e) {
-            console.error(e);
+            if (__DEV__) console.error(e);
         } finally {
             setLoading(false);
         }

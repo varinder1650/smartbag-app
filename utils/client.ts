@@ -7,11 +7,11 @@ import {
     saveAccessToken
 } from "./tokenStorage";
 
-// Simple inline logger to avoid dependency issues
+// Simple inline logger gated behind __DEV__
 const log = {
-    info: (msg: string) => console.log('[INFO]', msg),
-    warn: (msg: string) => console.warn('[WARN]', msg),
-    error: (msg: string, err: any) => console.error('[ERROR]', msg, err),
+    info: (msg: string) => { if (__DEV__) console.log('[INFO]', msg); },
+    warn: (msg: string) => { if (__DEV__) console.warn('[WARN]', msg); },
+    error: (msg: string, err: any) => { if (__DEV__) console.error('[ERROR]', msg, err); },
 };
 
 const api = axios.create({

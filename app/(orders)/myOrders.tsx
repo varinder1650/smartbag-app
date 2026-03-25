@@ -28,7 +28,7 @@ export default function MyOrders() {
             setHasNextPage(res.data.pagination.hasNextPage);
             setPage(pageNum);
         } catch (e) {
-            console.error("Failed to fetch orders", e);
+            if (__DEV__) console.error("Failed to fetch orders", e);
         } finally {
             setLoading(false);
             if (refresh) setRefreshing(false);

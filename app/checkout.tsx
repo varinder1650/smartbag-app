@@ -115,7 +115,7 @@ export default function CheckoutScreen() {
             try {
                 if (item.serviceType === "product") {
                     if (!item.id) {
-                        console.error("Product missing ID:", item);
+                        if (__DEV__) console.error("Product missing ID:", item);
                         return null;
                     }
                     return {
@@ -128,7 +128,7 @@ export default function CheckoutScreen() {
                 else if (item.serviceType === "porter") {
                     const details = item.serviceDetails;
                     if (!details?.pickupAddress?._id || !details?.deliveryAddress?._id) {
-                        console.error("Porter missing address:", item);
+                        if (__DEV__) console.error("Porter missing address:", item);
                         return null;
                     }
 
@@ -150,9 +150,11 @@ export default function CheckoutScreen() {
                 else if (item.serviceType === "printout") {
                     const details = item.serviceDetails;
 
-                    console.log("=== Processing Printout Item ===");
-                    console.log("Service Details:", details);
-                    console.log("Print Type:", details?.printType);
+                    if (__DEV__) {
+                        console.log("=== Processing Printout Item ===");
+                        console.log("Service Details:", details);
+                        console.log("Print Type:", details?.printType);
+                    }
 
                     // Check if it's a photo or document print
                     const isPhotorint = details?.printType === 'photo';
@@ -160,10 +162,9 @@ export default function CheckoutScreen() {
                     if (isPhotorint) {
                         // Photo printing validation
                         if (!details?.photoSize || !details?.copies) {
-                            console.error("Photo print missing required fields:", {
+                            if (__DEV__) console.error("Photo print missing required fields:", {
                                 photoSize: details?.photoSize,
                                 copies: details?.copies,
-                                fullDetails: details
                             });
                             return null;
                         }
@@ -186,10 +187,9 @@ export default function CheckoutScreen() {
                     } else {
                         // Document printing validation
                         if (!details?.numberOfPages || !details?.copies) {
-                            console.error("Document print missing required fields:", {
+                            if (__DEV__) console.error("Document print missing required fields:", {
                                 numberOfPages: details?.numberOfPages,
                                 copies: details?.copies,
-                                fullDetails: details
                             });
                             return null;
                         }
@@ -212,20 +212,19 @@ export default function CheckoutScreen() {
                 return null;
 
             } catch (error) {
-                console.error("Error building order item:", error, item);
+                if (__DEV__) console.error("Error building order item:", error, item);
                 return null;
             }
         });
 
         const validItems = items.filter(Boolean);
 
-        console.log("=== Order Items Summary ===");
-        console.log(`Built ${validItems.length} valid items out of ${cartItems.length} cart items`);
-        console.log("Valid items:", JSON.stringify(validItems, null, 2));
+        if (__DEV__) {
+            console.log(`Built ${validItems.length} valid items out of ${cartItems.length} cart items`);
+        }
 
         if (validItems.length === 0) {
-            console.error("=== No Valid Items ===");
-            console.error("Cart items:", cartItems);
+            if (__DEV__) console.error("No valid items. Cart:", cartItems);
             throw new Error("No valid items to order");
         }
 
@@ -318,8 +317,7 @@ export default function CheckoutScreen() {
                 promo_code: appliedPromo?.code || null,
             };
 
-            console.log("=== Sending Order Payload ===");
-            console.log(JSON.stringify(orderPayload, null, 2));
+            if (__DEV__) console.log("Sending order payload:", JSON.stringify(orderPayload, null, 2));
 
             const draftResponse = await api.post<CreateDraftOrderResponse>(
                 "/orders/draft",
@@ -400,8 +398,7 @@ export default function CheckoutScreen() {
             await confirmOrder(draft_order_id, signature, paymentMethod);
 
         } catch (error: any) {
-            console.error("=== Order Error Details ===");
-            console.error("Error:", error?.response?.data || error?.message);
+            if (__DEV__) console.error("Order error:", error?.response?.data || error?.message);
 
             const errorMessage = error?.response?.data?.detail ||
                 error?.message ||

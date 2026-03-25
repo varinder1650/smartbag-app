@@ -29,7 +29,7 @@ export default function AssignedOrders() {
 
             setHasMore(newOrders.length === 10);
         } catch (error) {
-            console.error("Failed to fetch assigned orders:", error);
+            if (__DEV__) console.error("Failed to fetch assigned orders:", error);
         } finally {
             setLoading(false);
             if (replace) setRefreshing(false);

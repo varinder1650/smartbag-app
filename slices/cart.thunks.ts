@@ -108,9 +108,9 @@ export const syncAddServiceToCart = createAsyncThunk<CartItem, CartItem, { rejec
                 servicePrice: item.selling_price,
                 serviceDetails: (item as any).serviceDetails,
             };
-            console.log("[syncAddServiceToCart] sending:", JSON.stringify(payload).slice(0, 500));
+            if (__DEV__) console.log("[syncAddServiceToCart] sending:", JSON.stringify(payload).slice(0, 500));
             const { data } = await api.post<any>("/cart/add", payload);
-            console.log("[syncAddServiceToCart] response:", JSON.stringify(data).slice(0, 500));
+            if (__DEV__) console.log("[syncAddServiceToCart] response:", JSON.stringify(data).slice(0, 500));
 
             // Ensure the ID maps back to the database _id so removals work
             return {
@@ -120,7 +120,7 @@ export const syncAddServiceToCart = createAsyncThunk<CartItem, CartItem, { rejec
             };
         } catch (error: any) {
             const message = error?.response?.data?.detail || error?.response?.data?.message || error.message || "Failed to add service to cart";
-            console.error("[syncAddServiceToCart] FAILED:", error?.response?.status, error?.response?.data || error.message);
+            if (__DEV__) console.error("[syncAddServiceToCart] FAILED:", error?.response?.status, error?.response?.data || error.message);
             return rejectWithValue(message);
         }
     }

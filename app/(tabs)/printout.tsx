@@ -112,7 +112,7 @@ export default function PrintoutScreen() {
 
                     setUploadProgress(80 + (i / totalFiles) * 20);
                 } catch (error) {
-                    console.error(`Error processing ${file.name}:`, error);
+                    if (__DEV__) console.error(`Error processing ${file.name}:`, error);
                     Alert.alert("Upload Error", `Failed to upload ${file.name}`);
                 }
             }
@@ -129,7 +129,7 @@ export default function PrintoutScreen() {
             }, 500);
 
         } catch (error) {
-            console.error("Error picking documents:", error);
+            if (__DEV__) console.error("Error picking documents:", error);
             Alert.alert("Error", "Failed to pick documents. Please try again.");
             setUploadProgress(0);
             setIsUploading(false);
@@ -176,7 +176,7 @@ export default function PrintoutScreen() {
 
                     setUploadProgress(70 + (i / totalPhotos) * 30);
                 } catch (error) {
-                    console.error(`Error uploading photo ${i + 1}:`, error);
+                    if (__DEV__) console.error(`Error uploading photo ${i + 1}:`, error);
                     Alert.alert("Upload Error", `Failed to upload photo ${i + 1}`);
                 }
             }
@@ -193,7 +193,7 @@ export default function PrintoutScreen() {
             }, 500);
 
         } catch (error) {
-            console.error("Error picking photos:", error);
+            if (__DEV__) console.error("Error picking photos:", error);
             Alert.alert("Error", "Failed to pick photos. Please try again.");
             setUploadProgress(0);
             setIsUploading(false);

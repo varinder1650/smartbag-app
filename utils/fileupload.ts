@@ -23,7 +23,7 @@ export const uploadToCloudinary = async (
         // Always use 'auto' for the API endpoint - let Cloudinary decide
         const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
-        console.log('Uploading file:', { fileUri, fileType, url });
+        if (__DEV__) console.log('Uploading file:', { fileUri, fileType, url });
 
         const response = await uploadAsync(url, fileUri, {
             httpMethod: 'POST',
@@ -35,8 +35,7 @@ export const uploadToCloudinary = async (
             },
         });
 
-        console.log('Upload response status:', response.status);
-        console.log('Upload response body:', response.body);
+        if (__DEV__) console.log('Upload response status:', response.status);
 
         if (response.status !== 200) {
             throw new Error(`Upload failed with status ${response.status}: ${response.body}`);
@@ -44,14 +43,11 @@ export const uploadToCloudinary = async (
 
         const json = JSON.parse(response.body);
 
-        // Log the full response to see what we're getting
-        console.log('Cloudinary response:', json);
-
         // Return secure_url directly
         return json.secure_url;
 
     } catch (error) {
-        console.error("Cloudinary upload error:", error);
+        if (__DEV__) console.error("Cloudinary upload error:", error);
         throw error;
     }
 };
@@ -96,11 +92,10 @@ export const deleteFromCloudinary = async (publicId: string): Promise<boolean> =
         const cloudName = ENV.CLOUDINARY.CLOUD_NAME;
 
         // Note: This requires server-side implementation due to API signature requirements
-        // For now, this is a placeholder
-        console.warn("Delete from Cloudinary requires server-side implementation");
+        if (__DEV__) console.warn("Delete from Cloudinary requires server-side implementation");
         return false;
     } catch (error) {
-        console.error("Cloudinary delete error:", error);
+        if (__DEV__) console.error("Cloudinary delete error:", error);
         return false;
     }
 };

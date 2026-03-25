@@ -46,7 +46,7 @@ export default function CartScreen() {
               // For guest users, clear locally
               dispatch(clearCartLocal(mode));
             }
-            console.log("Cart cleared");
+            if (__DEV__) console.log("Cart cleared");
           }
         }
       ]

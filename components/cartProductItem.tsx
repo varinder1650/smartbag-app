@@ -4,7 +4,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image, Pressable, Text, View } from "react-native";
 
 export function CartProductItem({ item }: { item: ProductCartItem }) {
-    console.log("CartProductItem Debug:", JSON.stringify(item, null, 2));
     const { quantity, increase, decrease } = useCartActions(item);
 
     return (

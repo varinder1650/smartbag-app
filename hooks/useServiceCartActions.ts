@@ -55,9 +55,7 @@ export function useServiceCartActions() {
         details: PrintoutServiceDetails,
         selling_price: number
     ) => {
-        console.log("=== Adding Printout Service ===");
-        console.log("Details:", details);
-        console.log("Price:", selling_price);
+        if (__DEV__) console.log("Adding printout service:", { printType: details.printType, price: selling_price });
 
         if (selling_price <= 0) {
             Alert.alert("Error", "Invalid print price");
@@ -66,13 +64,13 @@ export function useServiceCartActions() {
 
         // Validate required fields
         if (!details.printType) {
-            console.error("Missing printType");
+            if (__DEV__) console.error("Missing printType");
             Alert.alert("Error", "Print type not specified");
             return false;
         }
 
         if (!details.copies || details.copies <= 0) {
-            console.error("Invalid copies:", details.copies);
+            if (__DEV__) console.error("Invalid copies:", details.copies);
             Alert.alert("Error", "Please specify number of copies");
             return false;
         }
@@ -120,8 +118,7 @@ export function useServiceCartActions() {
             },
         } as any;
 
-        console.log("=== Service Item Created ===");
-        console.log(JSON.stringify(serviceItem, null, 2));
+        if (__DEV__) console.log("Service item created:", serviceItem.name);
 
         if (mode === "user") {
             const result = await dispatch(syncAddServiceToCart(serviceItem));

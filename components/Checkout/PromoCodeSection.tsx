@@ -41,46 +41,6 @@ export default function PromoCodeSection({
         }
     }, [cartVersion]);
 
-    // const handleApplyPromo = async () => {
-    //     if (!promo.trim()) return;
-
-    //     try {
-    //         setLoading(true);
-    //         const res = await api.post("/promocodes/validate", {
-    //             code: promo,
-    //             order_amount: orderAmount,
-    //         });
-
-    //         if (!res.data.valid) {
-    //             alert("Promo code not applicable");
-    //             return;
-    //         }
-
-    //         const promoData: AppliedPromo = res.data.promocode;
-
-    //         if (promoData.discount_type === "percentage") {
-    //             setDiscountAmount((orderAmount * promoData.discount_value) / 100);
-    //         } else {
-    //             setDiscountAmount(promoData.discount_value);
-    //         }
-
-    //         setDiscount(discountAmount);
-    //         setAppliedPromo(promoData);
-
-    //         // Animate applied promo
-    //         fadeAnim.setValue(0);
-    //         Animated.timing(fadeAnim, {
-    //             toValue: 1,
-    //             duration: 400,
-    //             useNativeDriver: true,
-    //         }).start();
-
-    //     } catch (e) {
-    //         alert("Failed to apply promo");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
     const handleApplyPromo = async () => {
         if (!promo.trim()) return;
 

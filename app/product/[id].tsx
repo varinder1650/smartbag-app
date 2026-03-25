@@ -31,7 +31,7 @@ export default function ProductsDetails() {
             } catch (err) {
                 if (!cancelled) {
                     setError("Failed to load product details");
-                    console.log(err);
+                    if (__DEV__) console.log(err);
                 }
             } finally {
                 setLoading(false);

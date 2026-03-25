@@ -54,10 +54,16 @@ export default function SignupScreen() {
     // Password validation
     if (!form.password) {
       newErrors.password = "Password is required";
-    } else if (form.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (form.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
     } else if (form.password.length > 128) {
       newErrors.password = "Password is too long";
+    } else if (!/[A-Z]/.test(form.password)) {
+      newErrors.password = "Password must contain at least one uppercase letter";
+    } else if (!/[0-9]/.test(form.password)) {
+      newErrors.password = "Password must contain at least one number";
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password)) {
+      newErrors.password = "Password must contain at least one special character";
     }
 
     // Phone validation (optional but if provided must be valid)
@@ -95,15 +101,10 @@ export default function SignupScreen() {
         role: "customer",
       };
 
-      console.log("📤 Sending signup request:", {
-        ...payload,
-        password: "***hidden***"
-      });
+      if (__DEV__) console.log("Sending signup request for:", payload.email);
 
       // Call register endpoint
       const response = await api.post("/auth/register", payload);
-
-      console.log("✅ Signup response:", response.data);
 
       if (response.data.success) {
         // Registration successful, needs email verification
@@ -128,7 +129,7 @@ export default function SignupScreen() {
         );
       }
     } catch (error: any) {
-      console.error("❌ Signup error:", error.response?.data || error.message);
+      if (__DEV__) console.error("Signup error:", error.response?.data || error.message);
 
       const errorMessage =
         error.response?.data?.detail ||

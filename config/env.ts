@@ -51,6 +51,8 @@ export const ENV = {
         CLOUD_NAME: process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME || '',
         UPLOAD_PRESET: process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
     },
+
+    SENTRY_DSN: process.env.EXPO_PUBLIC_SENTRY_DSN || '',
 } as const;
 
 // Validate on import

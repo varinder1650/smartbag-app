@@ -26,7 +26,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                 setUnreadCount(res.data.count || res.data.unread_count || 0);
             }
         } catch (error) {
-            console.error("Failed to fetch unread count:", error);
+            if (__DEV__) console.error("Failed to fetch unread count:", error);
         }
     };
 

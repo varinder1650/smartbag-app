@@ -26,7 +26,7 @@ export const loadProductDetails = async (id: string) => {
         const response = await api.get(`/products/${id}`);
         return response.data;
     } catch (err) {
-        console.log("Failed to get the product details: ", { err });
+        if (__DEV__) console.log("Failed to get the product details: ", { err });
     }
 };
 

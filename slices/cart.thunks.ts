@@ -205,15 +205,17 @@ export const mergeGuestCart = createAsyncThunk<void, CartItem[], { dispatch: any
 
         const services = items.filter(i => i.serviceType !== 'product');
         if (services.length > 0) {
-            for (const item of services) {
-                const payload = {
-                    serviceType: item.serviceType,
-                    serviceName: item.name,
-                    servicePrice: item.selling_price || (item as any).price || 0,
-                    serviceDetails: (item as any).serviceDetails || {},
-                };
-                await api.post("/cart/add", payload);
-            }
+            await Promise.all(
+                services.map((item) => {
+                    const payload = {
+                        serviceType: item.serviceType,
+                        serviceName: item.name,
+                        servicePrice: item.selling_price || (item as any).price || 0,
+                        serviceDetails: (item as any).serviceDetails || {},
+                    };
+                    return api.post("/cart/add", payload);
+                })
+            );
         }
 
         // Clear guest cart after merge

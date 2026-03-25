@@ -108,10 +108,15 @@ const addressSlice = createSlice({
             })
             .addCase(setDefaultAddress.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
-
-            .addCase(setDefaultAddress.rejected, (state) => {
+            .addCase(setDefaultAddress.fulfilled, (state) => {
                 state.loading = false;
+                state.error = null;
+            })
+            .addCase(setDefaultAddress.rejected, (state, action) => {
+                state.loading = false;
+                state.error = (action.payload as string) || "Failed to set default address";
             })
 
             // Delete

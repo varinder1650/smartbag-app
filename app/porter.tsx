@@ -3,7 +3,7 @@ import DimensionSelector from "@/components/Porter/DimensionSelector";
 import WeightSelector from "@/components/Porter/WeightSelector";
 import SafeView from "@/components/SafeView";
 import TitleBar from "@/components/TitleBar";
-import { calculatePorterPrice } from "@/config/servicePricing";
+import { calculatePorterPrice, PORTER_URGENCY_FEE } from "@/config/servicePricing";
 import { useServiceCartActions } from "@/hooks/useServiceCartActions";
 import { RootState } from "@/store/store";
 import { Address } from "@/types/address.types";
@@ -51,7 +51,7 @@ export default function PorterScreen() {
         let price = calculatePorterPrice(d, { length, width, height }, porterFee);
 
         if (isUrgent) {
-            price = price + 20;
+            price = price + PORTER_URGENCY_FEE;
         }
 
         return Math.round(price);

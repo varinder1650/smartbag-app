@@ -66,7 +66,10 @@ export default function CheckoutScreen() {
 
     const appFeeAmount = useMemo(() => {
         if (!appFeeConfig || subtotal <= 0) return 0;
-        return 5;
+        if (appFeeConfig.type === "percentage") {
+            return Math.round(subtotal * appFeeConfig.value / 100 * 100) / 100;
+        }
+        return appFeeConfig.value;
     }, [subtotal, appFeeConfig]);
 
     const displaySubtotal = backendSubtotal ?? subtotal;

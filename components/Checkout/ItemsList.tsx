@@ -1,10 +1,12 @@
 import { useCartActions } from "@/hooks/useCartActions";
 import { CartItem } from "@/types/cart.types";
+import { Product } from "@/types/products.types";
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
 import { Pressable, Text, View } from "react-native";
 
-function ProductItemRow({ item }: { item: any }) {
-    const { quantity, increase, decrease } = useCartActions(item);
+const ProductItemRow = React.memo(function ProductItemRow({ item }: { item: CartItem }) {
+    const { quantity, increase, decrease } = useCartActions(item as unknown as Product);
 
     if (quantity === 0) return null;
 
@@ -42,9 +44,9 @@ function ProductItemRow({ item }: { item: any }) {
             </Text>
         </View>
     );
-}
+});
 
-export default function ItemsList({
+function ItemsList({
     cartItems,
 }: {
     cartItems: CartItem[]
@@ -99,3 +101,5 @@ export default function ItemsList({
         </View>
     );
 }
+
+export default React.memo(ItemsList);

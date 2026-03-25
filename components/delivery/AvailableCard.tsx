@@ -1,5 +1,5 @@
 import api from "@/utils/client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 
 export type AvailableOrder = {
@@ -21,7 +21,7 @@ const statusColors: Record<string, string> = {
     assigning: "bg-orange-500",
 };
 
-export default function AvailableOrderCard({ order, onActionComplete }: Props) {
+function AvailableOrderCard({ order, onActionComplete }: Props) {
     const [isAccepted, setIsAccepted] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -86,3 +86,5 @@ export default function AvailableOrderCard({ order, onActionComplete }: Props) {
         </Pressable>
     );
 }
+
+export default React.memo(AvailableOrderCard);

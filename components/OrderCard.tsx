@@ -42,7 +42,7 @@ const statusIcons: Record<string, string> = {
     unknown: "help-circle",
 };
 
-export default function OrderCard({ order, onPress }: Props) {
+function OrderCard({ order, onPress }: Props) {
     if (!order) return null;
     const { order_id, id, created_at, delivered_at, order_status, total_amount, order_type } = order;
 
@@ -153,3 +153,5 @@ export default function OrderCard({ order, onPress }: Props) {
         </Pressable>
     );
 }
+
+export default React.memo(OrderCard);

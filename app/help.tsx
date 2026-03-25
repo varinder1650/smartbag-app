@@ -51,7 +51,7 @@ export default function Help() {
     };
     const handleCreateTicket = async (data: any) => {
         await api.post("/support/tickets", data);
-        fetchTickets();
+        await fetchTickets();
     };
 
     const renderTicket = ({ item }: { item: Ticket }) => {

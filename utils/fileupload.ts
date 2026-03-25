@@ -83,17 +83,27 @@ export const uploadMultipleToCloudinary = async (
 };
 
 /**
- * Delete a file from Cloudinary
+ * Delete a file from Cloudinary via the backend.
+ * Cloudinary deletion requires an API secret (signing), so it must be
+ * handled server-side. This sends the publicId to our backend which
+ * performs the actual Cloudinary destroy call.
+ *
  * @param publicId - Public ID of the file to delete
- * @returns Success status
+ * @returns true if deleted successfully, false otherwise
  */
 export const deleteFromCloudinary = async (publicId: string): Promise<boolean> => {
     try {
-        const cloudName = ENV.CLOUDINARY.CLOUD_NAME;
+        if (!publicId) {
+            if (__DEV__) console.warn("deleteFromCloudinary called with empty publicId");
+            return false;
+        }
 
-        // Note: This requires server-side implementation due to API signature requirements
-        if (__DEV__) console.warn("Delete from Cloudinary requires server-side implementation");
-        return false;
+        const api = (await import("@/utils/client")).default;
+        const res = await api.delete("/files/cloudinary", {
+            data: { public_id: publicId },
+        });
+
+        return res.status === 200;
     } catch (error) {
         if (__DEV__) console.error("Cloudinary delete error:", error);
         return false;

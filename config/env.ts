@@ -29,7 +29,7 @@ export const validateEnv = () => {
 
 const validateGoogleConfig = () => {
     if (!process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID) {
-        console.warn('Google Web Client ID not configured');
+        if (__DEV__) console.warn('Google Web Client ID not configured');
         return false;
     }
     return true;

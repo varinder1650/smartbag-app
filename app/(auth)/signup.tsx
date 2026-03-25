@@ -281,7 +281,7 @@ export default function SignupScreen() {
             )}
             {!errors.password && (
               <Text className="text-gray-400 text-xs mt-1 ml-1">
-                Must be at least 6 characters
+                Min 8 chars, with uppercase, number & special character
               </Text>
             )}
           </View>

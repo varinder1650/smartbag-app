@@ -2,7 +2,7 @@ import api from "@/utils/client";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, Text, View } from "react-native";
 
 interface ActiveOrderBanner {
@@ -29,7 +29,7 @@ export default function ActiveOrderBanner() {
     const [slideAnim] = useState(new Animated.Value(-100));
     const [pulseAnim] = useState(new Animated.Value(1));
 
-    const fetchActiveOrder = async () => {
+    const fetchActiveOrder = useCallback(async () => {
         try {
             const response = await api.get("/orders/active");
 
@@ -64,16 +64,16 @@ export default function ActiveOrderBanner() {
             if (__DEV__) console.error("Failed to fetch active orders:", error);
             setIsVisible(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchActiveOrder();
 
-        // Poll every 15 seconds for active orders
-        const interval = setInterval(fetchActiveOrder, 15000);
+        // Poll every 30 seconds for active orders
+        const interval = setInterval(fetchActiveOrder, 30000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchActiveOrder]);
 
     const animateIn = () => {
         Animated.spring(slideAnim, {
@@ -84,7 +84,7 @@ export default function ActiveOrderBanner() {
         }).start();
     };
 
-    const handleClose = async (orderId: string, status: string) => {
+    const handleClose = useCallback(async (orderId: string, status: string) => {
         const dismissedKey = `dismissed_${orderId}_${status}`;
         await AsyncStorage.setItem(dismissedKey, 'true');
 
@@ -95,7 +95,7 @@ export default function ActiveOrderBanner() {
             }
             return newOrders;
         });
-    };
+    }, []);
 
     const startPulse = () => {
         Animated.loop(

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
 
 type CategoryItemProps = {
@@ -9,7 +10,7 @@ type CategoryItemProps = {
   onPress: () => void;
 };
 
-export default function CategoryItem({
+function CategoryItem({
   label,
   image,
   icon,
@@ -38,3 +39,5 @@ export default function CategoryItem({
     </Pressable>
   );
 }
+
+export default React.memo(CategoryItem);

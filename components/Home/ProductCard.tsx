@@ -1,6 +1,7 @@
 import { useCartActions } from "@/hooks/useCartActions";
 import { Product } from "@/types/products.types";
 import { router } from "expo-router";
+import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
 
 export interface CartActionItem {
@@ -16,7 +17,7 @@ export interface CartActionItem {
     allow_user_description?: boolean;
 }
 
-export default function ProductCard({ id, images, name, actual_price, selling_price, discount, stock, allow_user_images, allow_user_description }: Product) {
+function ProductCard({ id, images, name, actual_price, selling_price, discount, stock, allow_user_images, allow_user_description }: Product) {
     const cartItem: Product = { id, name, actual_price, selling_price, discount, images, stock, allow_user_images, allow_user_description };
     const { quantity, add, increase, decrease } = useCartActions(cartItem);
 
@@ -104,3 +105,5 @@ export default function ProductCard({ id, images, name, actual_price, selling_pr
 
     );
 }
+
+export default React.memo(ProductCard);

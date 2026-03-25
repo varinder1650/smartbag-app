@@ -1,9 +1,10 @@
 import { useCartActions } from "@/hooks/useCartActions";
 import { ProductCartItem } from "@/types/cart.types";
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
 
-export function CartProductItem({ item }: { item: ProductCartItem }) {
+function CartProductItemInner({ item }: { item: ProductCartItem }) {
     const { quantity, increase, decrease } = useCartActions(item);
 
     return (
@@ -44,3 +45,5 @@ export function CartProductItem({ item }: { item: ProductCartItem }) {
         </View>
     );
 }
+
+export const CartProductItem = React.memo(CartProductItemInner);

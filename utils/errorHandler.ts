@@ -19,7 +19,7 @@ export class AppError extends Error {
     }
 }
 
-export const handleApiError = (error: any): AppError => {
+const handleApiError = (error: any): AppError => {
     // Already an AppError
     if (error instanceof AppError) {
         return error;
@@ -150,29 +150,3 @@ export const showError = (error: any, title: string = 'Error') => {
     );
 };
 
-export const showSuccess = (message: string, title: string = 'Success') => {
-    Alert.alert(title, message, [{ text: 'OK' }]);
-};
-
-export const showConfirm = (
-    title: string,
-    message: string,
-    onConfirm: () => void,
-    onCancel?: () => void
-) => {
-    Alert.alert(
-        title,
-        message,
-        [
-            {
-                text: 'Cancel',
-                style: 'cancel',
-                onPress: onCancel,
-            },
-            {
-                text: 'Confirm',
-                onPress: onConfirm,
-            },
-        ]
-    );
-};

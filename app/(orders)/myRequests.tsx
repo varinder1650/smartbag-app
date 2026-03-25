@@ -30,7 +30,7 @@ export default function MyRequests() {
             else setRequests((prev) => [...prev, ...res.data]);
             setHasNextPage(res.data.length === 10);
         } catch (e) {
-            console.error("Failed to fetch requests", e);
+            if (__DEV__) console.error("Failed to fetch requests", e);
         } finally {
             setLoading(false);
         }

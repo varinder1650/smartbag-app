@@ -147,7 +147,7 @@ export default function AddressModal({
                 );
             }
         } catch (error) {
-            console.error("Error validating pincode:", error);
+            if (__DEV__) console.error("Error validating pincode:", error);
             setPincodeValidation({
                 isValid: false,
                 isActive: false,

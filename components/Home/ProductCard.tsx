@@ -1,6 +1,7 @@
 import { useCartActions } from "@/hooks/useCartActions";
 import { Product } from "@/types/products.types";
 import { router } from "expo-router";
+import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
 
 export interface CartActionItem {
@@ -16,11 +17,12 @@ export interface CartActionItem {
     allow_user_description?: boolean;
 }
 
-export default function ProductCard({ id, images, name, actual_price, selling_price, discount, stock, allow_user_images, allow_user_description }: Product) {
+function ProductCard({ id, images, name, actual_price, selling_price, discount, stock, allow_user_images, allow_user_description }: Product) {
     const cartItem: Product = { id, name, actual_price, selling_price, discount, images, stock, allow_user_images, allow_user_description };
     const { quantity, add, increase, decrease } = useCartActions(cartItem);
 
-    const imageThumbnail = images && images.length > 0 ? images[0] : "../../assets/prod.webp";
+    const fallbackImage = require("../../assets/prod.webp");
+    const imageSource = images && images.length > 0 ? { uri: images[0] } : fallbackImage;
     // console.log("allow_user_images", cartItem);
     const in_stock = stock > 0;
     return (
@@ -33,7 +35,7 @@ export default function ProductCard({ id, images, name, actual_price, selling_pr
             >
                 <View className="relative bg-gray-50">
                     <Image
-                        source={{ uri: imageThumbnail }}
+                        source={imageSource}
                         className="w-full h-28"
                         resizeMode="contain"
                     />
@@ -103,3 +105,5 @@ export default function ProductCard({ id, images, name, actual_price, selling_pr
 
     );
 }
+
+export default React.memo(ProductCard);

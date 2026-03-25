@@ -47,7 +47,7 @@ export default function AvailableOrderCard({ order, onActionComplete }: Props) {
                             Alert.alert("Success", "Order accepted successfully!");
                             onActionComplete?.();
                         } catch (error) {
-                            console.error(error);
+                            if (__DEV__) console.error(error);
                             Alert.alert("Error", "Failed to accept order");
                             setIsProcessing(false);
                         }

@@ -23,7 +23,7 @@ export const uploadToCloudinary = async (
         // Always use 'auto' for the API endpoint - let Cloudinary decide
         const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
-        console.log('Uploading file:', { fileUri, fileType, url });
+        if (__DEV__) console.log('Uploading file:', { fileUri, fileType, url });
 
         const response = await uploadAsync(url, fileUri, {
             httpMethod: 'POST',
@@ -35,8 +35,7 @@ export const uploadToCloudinary = async (
             },
         });
 
-        console.log('Upload response status:', response.status);
-        console.log('Upload response body:', response.body);
+        if (__DEV__) console.log('Upload response status:', response.status);
 
         if (response.status !== 200) {
             throw new Error(`Upload failed with status ${response.status}: ${response.body}`);
@@ -44,14 +43,11 @@ export const uploadToCloudinary = async (
 
         const json = JSON.parse(response.body);
 
-        // Log the full response to see what we're getting
-        console.log('Cloudinary response:', json);
-
         // Return secure_url directly
         return json.secure_url;
 
     } catch (error) {
-        console.error("Cloudinary upload error:", error);
+        if (__DEV__) console.error("Cloudinary upload error:", error);
         throw error;
     }
 };
@@ -87,20 +83,29 @@ export const uploadMultipleToCloudinary = async (
 };
 
 /**
- * Delete a file from Cloudinary
+ * Delete a file from Cloudinary via the backend.
+ * Cloudinary deletion requires an API secret (signing), so it must be
+ * handled server-side. This sends the publicId to our backend which
+ * performs the actual Cloudinary destroy call.
+ *
  * @param publicId - Public ID of the file to delete
- * @returns Success status
+ * @returns true if deleted successfully, false otherwise
  */
 export const deleteFromCloudinary = async (publicId: string): Promise<boolean> => {
     try {
-        const cloudName = ENV.CLOUDINARY.CLOUD_NAME;
+        if (!publicId) {
+            if (__DEV__) console.warn("deleteFromCloudinary called with empty publicId");
+            return false;
+        }
 
-        // Note: This requires server-side implementation due to API signature requirements
-        // For now, this is a placeholder
-        console.warn("Delete from Cloudinary requires server-side implementation");
-        return false;
+        const api = (await import("@/utils/client")).default;
+        const res = await api.delete("/files/cloudinary", {
+            data: { public_id: publicId },
+        });
+
+        return res.status === 200;
     } catch (error) {
-        console.error("Cloudinary delete error:", error);
+        if (__DEV__) console.error("Cloudinary delete error:", error);
         return false;
     }
 };

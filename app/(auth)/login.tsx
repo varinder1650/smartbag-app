@@ -39,7 +39,7 @@ export default function Login() {
             const result = await dispatch(googleLogin()).unwrap();
 
             // Success - navigation is handled by root layout based on requirePhone
-            console.log('Google login successful:', result);
+            if (__DEV__) console.log('Google login successful:', result);
         } catch (error: any) {
             Alert.alert(
                 "Google Sign In Failed",

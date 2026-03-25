@@ -34,7 +34,7 @@ export default function Notifications() {
             await api.put(`/notifications/${notificationId}/read`);
             refreshUnreadCount();
         } catch (error) {
-            console.error("Failed to mark as read:", error);
+            if (__DEV__) console.error("Failed to mark as read:", error);
             // Revert on error? Or just silent fail for better UX since it's just 'read' status
             getNotifications(); // Refresh to ensure sync
         }
@@ -51,7 +51,7 @@ export default function Notifications() {
             await api.patch('/notifications/mark-all-read');
             refreshUnreadCount();
         } catch (error) {
-            console.error("Failed to mark all as read:", error);
+            if (__DEV__) console.error("Failed to mark all as read:", error);
             getNotifications();
         }
     };
@@ -64,29 +64,15 @@ export default function Notifications() {
         );
     };
 
-    // useEffect(() => {
-    //     const markAllAsRead = async () => {
-    //         try {
-    //             await api.patch('/notifications/mark-all-read');
-    //             refreshUnreadCount();
-    //         } catch (error) {
-    //             console.error("Failed to mark all as read:", error);
-    //         }
-    //     };
-
-    //     markAllAsRead();
-    // }, []);
-
     const getNotifications = async () => {
         try {
             const res = await api.get("/notifications");
-            // console.log("API Response:", res.data);
 
             if (res.data && res.data.notifications) {
                 setNotifications(res.data.notifications);
             }
         } catch (error) {
-            console.error("Failed to fetch notifications:", error);
+            if (__DEV__) console.error("Failed to fetch notifications:", error);
         }
     };
 

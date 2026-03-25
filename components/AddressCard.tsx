@@ -1,4 +1,5 @@
 import { deleteAddress, setDefaultAddress } from "@/slices/addressSlice";
+import { setCheckoutAddress } from "@/slices/checkoutAddressSlice";
 import { setDeliveryAddress, setPickupAddress } from "@/slices/porterAddressSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { Address } from "@/types/address.types";
@@ -8,7 +9,7 @@ import { Pressable, Text, View } from "react-native";
 
 type Props = Address & {
     mode?: boolean;
-    addressType?: "pickup" | "delivery";
+    addressType?: "pickup" | "delivery" | "checkout";
     onEdit?: () => void;
 };
 
@@ -45,8 +46,10 @@ export const AddressCard = ({
         if (mode && addressType) {
             if (addressType === "pickup") {
                 dispatch(setPickupAddress(fullAddress));
-            } else {
+            } else if (addressType === "delivery") {
                 dispatch(setDeliveryAddress(fullAddress));
+            } else if (addressType === "checkout") {
+                dispatch(setCheckoutAddress(fullAddress));
             }
             router.back();
             return;

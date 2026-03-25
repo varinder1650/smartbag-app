@@ -1,12 +1,13 @@
 import "../global.css";
 
+import ErrorBoundary from "@/components/ErrorBoundary";
 import LoadingLogo from "@/components/LoadingLogo";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { fetchAddresses } from "@/slices/addressSlice";
 import { restoreAuth } from "@/slices/authSlice";
 import { fetchPrices } from "@/slices/priceSlice";
-import { fetchShopStatus } from "@/slices/Shopstatusslice";
+import { fetchShopStatus } from "@/slices/shopStatusSlice";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Redirect, Stack, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -18,13 +19,15 @@ import { AppDispatch, persistor, RootState, store } from "../store/store";
 
 export default function RootLayout() {
   return (
-    <Provider store={store}>
-      <PersistGate loading={<LoadingLogo />} persistor={persistor}>
-        <NotificationProvider>
-          <RootLayoutWithProviders />
-        </NotificationProvider>
-      </PersistGate>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <PersistGate loading={<LoadingLogo />} persistor={persistor}>
+          <NotificationProvider>
+            <RootLayoutWithProviders />
+          </NotificationProvider>
+        </PersistGate>
+      </Provider>
+    </ErrorBoundary>
   );
 }
 
@@ -50,7 +53,7 @@ function RootLayoutWithProviders() {
           }
         }
       } catch (error) {
-        console.error("Error restoring session:", error);
+        if (__DEV__) console.error("Error restoring session:", error);
       } finally {
         if (mounted) {
           setInitialLoadComplete(true);
@@ -95,8 +98,7 @@ function RootLayoutWithProviders() {
     if (!isAuthenticated && !inAuthGroup) {
       redirectPath = "/(auth)/login";
     } else if (isAuthenticated && inAuthGroup && !requirePhone) {
-      console.log('🔍 Redirecting to:', '/(tabs)/index');
-      console.log('🔍 Current segments:', segments);
+      if (__DEV__) console.log('Redirecting to /(tabs), segments:', segments);
       redirectPath = "/(tabs)";
     } else if (isAuthenticated && requirePhone && segments[1] !== "require_phone") {
       redirectPath = "/(auth)/require_phone";

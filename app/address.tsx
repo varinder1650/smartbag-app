@@ -13,7 +13,7 @@ import { useSelector } from "react-redux";
 export default function AddressScreen() {
     const params = useLocalSearchParams<{
         mode?: "select";
-        addressType?: "pickup" | "delivery";
+        addressType?: "pickup" | "delivery" | "checkout";
     }>();
 
     const isSelectMode = params.mode === "select";
@@ -27,7 +27,9 @@ export default function AddressScreen() {
             <TitleBar
                 title={
                     isSelectMode
-                        ? `Select ${params.addressType} address`
+                        ? params.addressType === "checkout"
+                            ? "Select delivery address"
+                            : `Select ${params.addressType} address`
                         : "My Addresses"
                 }
                 subtitle=""

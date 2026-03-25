@@ -9,14 +9,14 @@ export const fetchAddresses = createAsyncThunk<Address[], void, { rejectValue: s
         try {
             const res = await api.get("/address/my/");
             const payload = res.data;
-            console.log("[fetchAddresses] raw:", JSON.stringify(payload).slice(0, 200));
+            if (__DEV__) console.log("[fetchAddresses] raw:", JSON.stringify(payload).slice(0, 200));
             const addresses = Array.isArray(payload)
                 ? payload
                 : (payload.data || payload.addresses || []);
             return addresses;
         } catch (error: any) {
             const message = error?.response?.data?.detail || error?.response?.data?.message || error.message || "Failed to fetch addresses";
-            console.error("[fetchAddresses] error:", error?.response?.status, error?.response?.data || error.message);
+            if (__DEV__) console.error("[fetchAddresses] error:", error?.response?.status, error?.response?.data || error.message);
             return rejectWithValue(message);
         }
     }
@@ -34,7 +34,7 @@ export const saveAddress = createAsyncThunk<void, AddressEdit, { rejectValue: st
             dispatch(fetchAddresses());
         } catch (error: any) {
             const message = error?.response?.data?.detail || error?.response?.data?.message || error.message || "Failed to save address";
-            console.error("[saveAddress] error:", error?.response?.status, error?.response?.data || error.message);
+            if (__DEV__) console.error("[saveAddress] error:", error?.response?.status, error?.response?.data || error.message);
             return rejectWithValue(message);
         }
     }
@@ -108,10 +108,15 @@ const addressSlice = createSlice({
             })
             .addCase(setDefaultAddress.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
-
-            .addCase(setDefaultAddress.rejected, (state) => {
+            .addCase(setDefaultAddress.fulfilled, (state) => {
                 state.loading = false;
+                state.error = null;
+            })
+            .addCase(setDefaultAddress.rejected, (state, action) => {
+                state.loading = false;
+                state.error = (action.payload as string) || "Failed to set default address";
             })
 
             // Delete

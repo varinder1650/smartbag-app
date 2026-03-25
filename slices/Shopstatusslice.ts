@@ -5,8 +5,6 @@ interface ShopStatus {
     is_open: boolean;
     reopen_time: string | null;
     reason: string | null;
-    // updated_at: string;
-    // updated_by: string;
 }
 
 interface ShopStatusState {
@@ -31,7 +29,7 @@ export const fetchShopStatus = createAsyncThunk(
             const response = await api.get<ShopStatus>('shop/status');
             return response.data;
         } catch (error: any) {
-            console.error('Failed to fetch shop status:', error);
+            if (__DEV__) console.error('Failed to fetch shop status:', error);
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch shop status');
         }
     }
@@ -66,8 +64,6 @@ const shopStatusSlice = createSlice({
                     is_open: true,
                     reopen_time: null,
                     reason: null,
-                    // updated_at: new Date().toISOString(),
-                    // updated_by: 'system'
                 };
             });
     },

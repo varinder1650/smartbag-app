@@ -1,4 +1,4 @@
-import { selectCartTotal } from "@/utils/cartSelectors";
+import { selectCartTotal } from "@/slices/cartSelectors";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";

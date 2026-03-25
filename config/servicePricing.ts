@@ -51,6 +51,9 @@ const getDimensionValue = (dim: string): number => {
     }
 }
 
+/** Flat surcharge added for urgent porter deliveries (₹) */
+export const PORTER_URGENCY_FEE = 20;
+
 export const calculatePorterPrice = (
     distance: number,
     dimensions: { length: string; width: string; height: string },

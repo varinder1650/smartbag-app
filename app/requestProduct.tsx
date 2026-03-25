@@ -33,7 +33,7 @@ export default function RequestProductScreen() {
                 }
             } catch (err) {
                 if (!cancelled) {
-                    console.log("Failed to load categories:", err);
+                    if (__DEV__) console.log("Failed to load categories:", err);
                 }
             }
         };
@@ -91,7 +91,7 @@ export default function RequestProductScreen() {
             }
         } catch (error) {
             Alert.alert("Error", "Failed to submit request. Please try again.");
-            console.error("Product request error:", error);
+            if (__DEV__) console.error("Product request error:", error);
         }
     };
 

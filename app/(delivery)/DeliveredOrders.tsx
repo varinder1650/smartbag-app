@@ -29,7 +29,7 @@ export default function DeliveredOrders() {
 
             setHasMore(newOrders.length === 10);
         } catch (error) {
-            console.error("Failed to fetch delivered orders:", error);
+            if (__DEV__) console.error("Failed to fetch delivered orders:", error);
         } finally {
             setLoading(false);
             if (replace) setRefreshing(false);

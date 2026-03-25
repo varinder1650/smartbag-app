@@ -29,7 +29,7 @@ export const validateEnv = () => {
 
 const validateGoogleConfig = () => {
     if (!process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID) {
-        console.warn('Google Web Client ID not configured');
+        if (__DEV__) console.warn('Google Web Client ID not configured');
         return false;
     }
     return true;
@@ -51,6 +51,8 @@ export const ENV = {
         CLOUD_NAME: process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME || '',
         UPLOAD_PRESET: process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
     },
+
+    SENTRY_DSN: process.env.EXPO_PUBLIC_SENTRY_DSN || '',
 } as const;
 
 // Validate on import

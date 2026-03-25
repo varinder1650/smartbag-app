@@ -87,7 +87,7 @@ export const getAccessToken = async (): Promise<string | null> => {
 
         return token;
     } catch (error) {
-        console.error('Error retrieving access token:', error);
+        if (__DEV__) console.error('Error retrieving access token:', error);
         return null;
     }
 };
@@ -96,7 +96,7 @@ export const getRefreshToken = async (): Promise<string | null> => {
     try {
         return await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
     } catch (error) {
-        console.error('Error retrieving refresh token:', error);
+        if (__DEV__) console.error('Error retrieving refresh token:', error);
         return null;
     }
 };
@@ -109,7 +109,7 @@ export const clearTokens = async (): Promise<void> => {
             SecureStore.deleteItemAsync(TOKEN_TIMESTAMP_KEY),
         ]);
     } catch (error) {
-        console.error('Error clearing tokens:', error);
+        if (__DEV__) console.error('Error clearing tokens:', error);
     }
 };
 

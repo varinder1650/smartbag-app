@@ -38,7 +38,7 @@ export default function AvailableOrders() {
                 setPage(pageNumber + 1);
             }
         } catch (e) {
-            console.error("Failed to fetch orders", e);
+            if (__DEV__) console.error("Failed to fetch orders", e);
         } finally {
             setLoading(false);
             if (replace) setRefreshing(false);

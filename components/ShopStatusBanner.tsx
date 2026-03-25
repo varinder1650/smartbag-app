@@ -1,4 +1,4 @@
-import { fetchShopStatus } from "@/slices/Shopstatusslice";
+import { fetchShopStatus } from "@/slices/shopStatusSlice";
 import { AppDispatch, RootState } from "@/store/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";

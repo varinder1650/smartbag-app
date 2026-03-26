@@ -1,3 +1,4 @@
+import { getStatusConfig } from "@/constants/statusConfig";
 import api from "@/utils/client";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,15 +13,6 @@ interface ActiveOrderBanner {
     total_amount: number;
 }
 
-const STATUS_CONFIG = {
-    confirmed: { color: "bg-blue-500", icon: "checkmark-circle", label: "Confirmed", progress: 14 },
-    preparing: { color: "bg-orange-500", icon: "restaurant", label: "Preparing", progress: 28 },
-    assigning: { color: "bg-yellow-500", icon: "search", label: "Finding Partner", progress: 42 },  // NEW
-    assigned: { color: "bg-purple-500", icon: "person", label: "Assigned", progress: 57 },
-    out_for_delivery: { color: "bg-green-500", icon: "bicycle", label: "On the Way", progress: 71 },
-    arrived: { color: "bg-indigo-500", icon: "location", label: "Arrived", progress: 85 },
-    delivered: { color: "bg-gray-500", icon: "checkmark-done", label: "Delivered", progress: 100 },
-};
 
 export default function ActiveOrderBanner() {
     const [orders, setOrders] = useState<ActiveOrderBanner[]>([]);
@@ -117,12 +109,7 @@ export default function ActiveOrderBanner() {
     if (!isVisible || orders.length === 0) return null;
 
     const renderBanner = (order: ActiveOrderBanner) => {
-        const config = STATUS_CONFIG[order.order_status as keyof typeof STATUS_CONFIG] || {
-            color: "bg-blue-500",
-            icon: "time",
-            label: "Processing",
-            progress: 20,
-        };
+        const config = getStatusConfig(order.order_status);
 
         return (
             <Pressable

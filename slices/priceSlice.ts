@@ -46,7 +46,6 @@ export const fetchPrices = createAsyncThunk<PriceResponse>(
     "pricing/get",
     async () => {
         const prices = await api.get("/settings/public")
-        // console.log(prices.data);
         return {
             deliveryFee: prices.data.delivery_fee,
             appFee: prices.data.appFee,

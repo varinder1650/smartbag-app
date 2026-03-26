@@ -1,7 +1,7 @@
+import { getStatusConfig, STATUS_STEPS } from "@/constants/statusConfig";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Animated, Text, View } from "react-native";
-import { STATUS_STEPS } from "./types";
 
 interface OrderStatusStepperProps {
     currentStatus: string;
@@ -9,7 +9,7 @@ interface OrderStatusStepperProps {
 }
 
 function OrderStatusStepper({ currentStatus, progressAnim }: OrderStatusStepperProps) {
-    const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === currentStatus.toLowerCase());
+    const currentStepIndex = STATUS_STEPS.indexOf(currentStatus.toLowerCase() as typeof STATUS_STEPS[number]);
 
     return (
         <View className="bg-white px-6 py-6 mb-4">
@@ -29,18 +29,19 @@ function OrderStatusStepper({ currentStatus, progressAnim }: OrderStatusStepperP
             </View>
 
             {/* Status Steps */}
-            {STATUS_STEPS.map((step, index) => {
+            {STATUS_STEPS.map((stepKey, index) => {
+                const config = getStatusConfig(stepKey);
                 const isCompleted = index <= currentStepIndex;
                 const isCurrent = index === currentStepIndex;
 
                 return (
-                    <View key={step.key} className="flex-row items-start mb-4">
+                    <View key={stepKey} className="flex-row items-start mb-4">
                         <View className="items-center mr-3">
                             <View
                                 className={`w-10 h-10 rounded-full items-center justify-center ${isCompleted ? "bg-blue-500" : "bg-gray-200"}`}
                             >
                                 <Ionicons
-                                    name={step.icon as any}
+                                    name={config.icon as any}
                                     size={20}
                                     color={isCompleted ? "white" : "#9CA3AF"}
                                 />
@@ -61,7 +62,7 @@ function OrderStatusStepper({ currentStatus, progressAnim }: OrderStatusStepperP
                                         : "text-gray-400"
                                     }`}
                             >
-                                {step.label}
+                                {config.label}
                             </Text>
                             {isCurrent && (
                                 <Text className="text-blue-500 text-xs mt-1">

@@ -1,4 +1,4 @@
-import { CartProductItem } from "@/components/cartProductItem";
+import { CartProductItem } from "@/components/CartProductItem";
 import SafeView from "@/components/SafeView";
 import { selectCartItems, selectCartSubtotal, selectCartTotal } from "@/slices/cartSelectors";
 import { clearCartLocal, decreaseQty, syncClearCart } from "@/slices/cartSlice";

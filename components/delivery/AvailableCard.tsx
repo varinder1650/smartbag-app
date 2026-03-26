@@ -1,3 +1,4 @@
+import { getStatusConfig } from "@/constants/statusConfig";
 import api from "@/utils/client";
 import React, { useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
@@ -13,13 +14,6 @@ type Props = {
     onActionComplete?: () => void;
 };
 
-const statusColors: Record<string, string> = {
-    preparing: "bg-yellow-400",
-    out_for_delivery: "bg-blue-500",
-    delivered: "bg-green-500",
-    cancelled: "bg-red-500",
-    assigning: "bg-orange-500",
-};
 
 function AvailableOrderCard({ order, onActionComplete }: Props) {
     const [isAccepted, setIsAccepted] = useState(false);
@@ -28,7 +22,6 @@ function AvailableOrderCard({ order, onActionComplete }: Props) {
     const formattedDate = new Date(order.created_at).toLocaleString();
 
     const handlePress = () => {
-        // console.log("Card pressed", { id: order.id, isAccepted, isProcessing });
         // Prevent double submission
         if (isAccepted || isProcessing) return;
 
@@ -57,8 +50,9 @@ function AvailableOrderCard({ order, onActionComplete }: Props) {
         );
     };
 
-    const displayStatus = isAccepted ? "Accepted" : order.order_status.replace("_", " ");
-    const displayColor = isAccepted ? "bg-green-600" : (statusColors[order.order_status] || "bg-gray-300");
+    const config = getStatusConfig(order.order_status);
+    const displayStatus = isAccepted ? "Accepted" : config.label;
+    const displayColor = isAccepted ? "bg-green-600" : config.color;
 
     return (
         <Pressable

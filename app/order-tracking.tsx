@@ -3,7 +3,8 @@ import OrderDetailsSection from "@/components/OrderTracking/OrderDetailsSection"
 import OrderStatusStepper from "@/components/OrderTracking/OrderStatusStepper";
 import RatingModal from "@/components/OrderTracking/RatingModal";
 import TipSection from "@/components/OrderTracking/TipSection";
-import { ActiveOrder, STATUS_STEPS } from "@/components/OrderTracking/types";
+import { ActiveOrder } from "@/components/OrderTracking/types";
+import { getStatusConfig, STATUS_STEPS } from "@/constants/statusConfig";
 import SafeView from "@/components/SafeView";
 import api from "@/utils/client";
 import { Ionicons } from "@expo/vector-icons";
@@ -149,7 +150,7 @@ export default function OrderTrackingScreen() {
     useEffect(() => {
         if (!order) return;
 
-        const currentIndex = STATUS_STEPS.findIndex(s => s.key === order.order_status);
+        const currentIndex = STATUS_STEPS.indexOf(order.order_status as typeof STATUS_STEPS[number]);
         const progress = ((currentIndex + 1) / STATUS_STEPS.length) * 100;
 
         Animated.timing(progressAnim, {
@@ -273,8 +274,8 @@ export default function OrderTrackingScreen() {
 
     // --- Derived values ---
 
-    const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === order.order_status.toLowerCase());
-    const currentStepConfig = STATUS_STEPS[currentStepIndex] || STATUS_STEPS[0];
+    const currentStepIndex = STATUS_STEPS.indexOf(order.order_status.toLowerCase() as typeof STATUS_STEPS[number]);
+    const currentStepConfig = getStatusConfig(order.order_status);
     const canAddTip = ["assigned", "out_for_delivery"].includes(order.order_status) && !order.tip_amount;
 
     return (

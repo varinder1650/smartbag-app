@@ -60,12 +60,5 @@ export interface ActiveOrder {
     assigned_at?: string;
 }
 
-export const STATUS_STEPS = [
-    { key: "confirmed", label: "Confirmed", icon: "checkmark-circle" },
-    { key: "preparing", label: "Preparing", icon: "restaurant" },
-    { key: "assigning", label: "Finding Partner", icon: "search" },
-    { key: "assigned", label: "Assigned", icon: "person" },
-    { key: "out_for_delivery", label: "On the Way", icon: "bicycle" },
-    { key: "arrived", label: "Arrived", icon: "location" },
-    { key: "delivered", label: "Delivered", icon: "checkmark-done" },
-] as const;
+// Re-export from shared constants for backward compatibility
+export { STATUS_CONFIG, STATUS_STEPS, getStatusConfig } from "@/constants/statusConfig";

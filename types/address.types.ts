@@ -8,6 +8,8 @@ export interface Address {
     pincode: string;
     mobile_number: string;
     is_default: boolean;
+    latitude?: number;
+    longitude?: number;
 }
 
 export interface AddressEdit {
@@ -20,4 +22,6 @@ export interface AddressEdit {
     pincode: string;
     mobile_number: string;
     is_default: boolean;
+    latitude?: number;
+    longitude?: number;
 }

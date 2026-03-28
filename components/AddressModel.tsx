@@ -1,8 +1,11 @@
+import { clearMapPickerResult } from "@/slices/mapPickerSlice";
 import { saveAddress } from "@/slices/addressSlice";
 import { useAppDispatch } from "@/store/hooks";
+import { RootState } from "@/store/store";
 import { AddressEdit } from "@/types/address.types";
 import api from "@/utils/client";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -17,6 +20,7 @@ import {
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSelector } from "react-redux";
 
 interface PincodeValidation {
     isValid: boolean;
@@ -37,7 +41,9 @@ export default function AddressModal({
     initialData?: AddressEdit | null;
 }) {
     const dispatch = useAppDispatch();
+    const router = useRouter();
     const insets = useSafeAreaInsets();
+    const mapPickerResult = useSelector((state: RootState) => state.mapPicker.result);
 
     const [form, setForm] = useState<AddressEdit>({
         label: "",
@@ -87,6 +93,30 @@ export default function AddressModal({
             });
         }
     }, [initialData, visible]);
+
+    // Consume map picker results
+    useEffect(() => {
+        if (mapPickerResult && visible) {
+            const { latitude, longitude, geocodedAddress } = mapPickerResult;
+
+            setForm(prev => ({
+                ...prev,
+                latitude,
+                longitude,
+                street: geocodedAddress?.street || prev.street,
+                city: geocodedAddress?.city || prev.city,
+                state: geocodedAddress?.state || prev.state,
+                pincode: geocodedAddress?.pincode || prev.pincode,
+            }));
+
+            // Trigger pincode validation if we got a pincode
+            if (geocodedAddress?.pincode && geocodedAddress.pincode.length === 6) {
+                validatePincode(geocodedAddress.pincode);
+            }
+
+            dispatch(clearMapPickerResult());
+        }
+    }, [mapPickerResult, visible]);
 
     const validatePincode = async (pincode: string) => {
         // Only validate if pincode is 6 digits
@@ -311,6 +341,33 @@ export default function AddressModal({
                                         })}
                                     </View>
                                 </View>
+
+                                {/* Pick on Map Button */}
+                                <Pressable
+                                    onPress={() => {
+                                        onClose();
+                                        router.push({
+                                            pathname: "/map-picker",
+                                            params: form.latitude && form.longitude
+                                                ? { initialLat: String(form.latitude), initialLng: String(form.longitude) }
+                                                : {},
+                                        } as any);
+                                    }}
+                                    className="mb-5 flex-row items-center border border-primary/30 bg-primary/5 rounded-xl px-4 py-3.5"
+                                >
+                                    <Ionicons name="map-outline" size={22} color="#007AFF" />
+                                    <View className="flex-1 ml-3">
+                                        <Text className="text-sm font-semibold text-primary">
+                                            {form.latitude ? "Change pin on map" : "Pick location on map"}
+                                        </Text>
+                                        {form.latitude && (
+                                            <Text className="text-xs text-gray-500 mt-0.5">
+                                                Location pinned
+                                            </Text>
+                                        )}
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={18} color="#007AFF" />
+                                </Pressable>
 
                                 {/* Input Fields */}
                                 <View className="space-y-3">

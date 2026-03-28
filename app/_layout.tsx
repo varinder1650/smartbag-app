@@ -165,6 +165,10 @@ function RootLayoutWithProviders() {
               name="order-tracking"
               options={{ headerShown: false, presentation: "modal", animation: "slide_from_bottom" }}
             />
+            <Stack.Screen
+              name="map-picker"
+              options={{ headerShown: false, animation: "slide_from_right" }}
+            />
           </Stack>
           <StatusBar style="auto" />
         </>

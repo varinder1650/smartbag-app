@@ -31,6 +31,7 @@ export default function OrderTrackingScreen() {
 
     // Rating state
     const [showRating, setShowRating] = useState(false);
+    const ratingPromptShown = useRef(false);
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState("");
     const [submittingRating, setSubmittingRating] = useState(false);
@@ -59,7 +60,8 @@ export default function OrderTrackingScreen() {
 
             if (response.data) {
                 setOrder(response.data);
-                if (response.data.order_status === "delivered" && !response.data.rating) {
+                if (response.data.order_status === "delivered" && !response.data.rating && !ratingPromptShown.current) {
+                    ratingPromptShown.current = true;
                     setShowRating(true);
                 }
             } else {
@@ -307,7 +309,7 @@ export default function OrderTrackingScreen() {
                             </View>
                         </View>
 
-                        <CountdownTimer countdown={countdown} timerStatus={timerStatus} />
+                        <CountdownTimer countdown={countdown} timerStatus={timerStatus} deliveredAt={order.delivered_at} />
                     </View>
 
                     <Text className="text-black/90 text-sm">{order.status_message}</Text>

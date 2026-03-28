@@ -276,9 +276,8 @@ export default function AddressModal({
     return (
         <Modal visible={visible} animationType="slide" transparent>
             <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                behavior="padding"
                 style={{ flex: 1 }}
-                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
             >
                 <Pressable
                     className="flex-1 bg-black/40"

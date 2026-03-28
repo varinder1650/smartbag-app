@@ -64,7 +64,7 @@ function OrderStatusStepper({ currentStatus, progressAnim }: OrderStatusStepperP
                             >
                                 {config.label}
                             </Text>
-                            {isCurrent && (
+                            {isCurrent && currentStatus !== "delivered" && (
                                 <Text className="text-blue-500 text-xs mt-1">
                                     In Progress...
                                 </Text>

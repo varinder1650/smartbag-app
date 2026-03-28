@@ -58,6 +58,7 @@ export interface ActiveOrder {
     rating?: number;
     review?: string;
     assigned_at?: string;
+    delivered_at?: string;
 }
 
 // Re-export from shared constants for backward compatibility

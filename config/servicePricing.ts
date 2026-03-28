@@ -13,6 +13,7 @@ export const calculateDocumentPrice = (
     size: 'A4' | 'A3' | 'Legal',
     pricing: PrintoutFee
 ) => {
+    if (!pricing?.doc) return 0;
     const docPricing = pricing.doc;
     let pricePerPage = 0;
 
@@ -32,6 +33,7 @@ export const calculatePhotoPrice = (
     copies: number,
     pricing: PrintoutFee
 ) => {
+    if (!pricing?.photo) return 0;
     let pricePerPhoto = 0;
     if (size === 'Passport') {
         pricePerPhoto = pricing.photo.passport;

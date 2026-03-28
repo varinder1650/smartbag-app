@@ -2,26 +2,76 @@ import { setMapPickerResult } from "@/slices/mapPickerSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { debouncedReverseGeocode, GeocodedAddress } from "@/utils/geocoding";
 import { Ionicons } from "@expo/vector-icons";
-import MapLibreGL from "@maplibre/maplibre-react-native";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
-    Platform,
     Pressable,
     Text,
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { WebView, WebViewMessageEvent } from "react-native-webview";
 
 const OLA_MAPS_API_KEY = process.env.EXPO_PUBLIC_OLA_MAPS_API_KEY;
-const OLA_STYLE_URL = `https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json`;
 
-// Default center (New Delhi) used when location permission is denied
-const DEFAULT_CENTER: [number, number] = [77.209, 28.6139];
+const DEFAULT_CENTER = { lng: 77.209, lat: 28.6139 };
 const DEFAULT_ZOOM = 15;
+
+function getMapHTML(lat: number, lng: number, zoom: number) {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; }
+  body, html, #map { width: 100%; height: 100%; overflow: hidden; }
+  .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right { display: none !important; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+const API_KEY = "${OLA_MAPS_API_KEY}";
+const STYLE_URL = "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json?api_key=" + API_KEY;
+
+const map = new maplibregl.Map({
+    container: "map",
+    style: STYLE_URL,
+    center: [${lng}, ${lat}],
+    zoom: ${zoom},
+    attributionControl: false,
+    transformRequest: (url, resourceType) => {
+        if (url.includes("api.olamaps.io") && !url.includes("api_key=")) {
+            const sep = url.includes("?") ? "&" : "?";
+            return { url: url + sep + "api_key=" + API_KEY };
+        }
+        return { url };
+    }
+});
+
+map.on("moveend", () => {
+    const center = map.getCenter();
+    window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: "regionChange",
+        lat: center.lat,
+        lng: center.lng,
+    }));
+});
+
+// Expose flyTo for React Native to call
+window.flyToLocation = (lat, lng) => {
+    map.flyTo({ center: [lng, lat], zoom: ${zoom}, duration: 800 });
+};
+</script>
+</body>
+</html>`;
+}
 
 export default function MapPickerScreen() {
     const router = useRouter();
@@ -31,23 +81,22 @@ export default function MapPickerScreen() {
         initialLat?: string;
         initialLng?: string;
     }>();
+    const webViewRef = useRef<WebView>(null);
 
-    const cameraRef = useRef<MapLibreGL.CameraRef>(null);
+    const initialCenter = {
+        lat: params.initialLat ? parseFloat(params.initialLat) : DEFAULT_CENTER.lat,
+        lng: params.initialLng ? parseFloat(params.initialLng) : DEFAULT_CENTER.lng,
+    };
 
-    const [center, setCenter] = useState<[number, number]>(() => {
-        if (params.initialLat && params.initialLng) {
-            return [parseFloat(params.initialLng), parseFloat(params.initialLat)];
-        }
-        return DEFAULT_CENTER;
-    });
+    const [center, setCenter] = useState(initialCenter);
     const [geocodedAddress, setGeocodedAddress] = useState<GeocodedAddress | null>(null);
     const [isGeocoding, setIsGeocoding] = useState(false);
     const [locationLoading, setLocationLoading] = useState(!params.initialLat);
+    const [mapReady, setMapReady] = useState(false);
 
     useEffect(() => {
         if (params.initialLat && params.initialLng) {
-            // Already have initial coordinates, just geocode them
-            handleRegionChange(parseFloat(params.initialLng), parseFloat(params.initialLat));
+            handleRegionChange(parseFloat(params.initialLat), parseFloat(params.initialLng));
             return;
         }
         requestLocationAndCenter();
@@ -63,6 +112,8 @@ export default function MapPickerScreen() {
                     [{ text: "OK" }]
                 );
                 setLocationLoading(false);
+                // Still geocode the default center
+                handleRegionChange(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng);
                 return;
             }
 
@@ -70,14 +121,15 @@ export default function MapPickerScreen() {
                 accuracy: Location.Accuracy.Balanced,
             });
 
-            const newCenter: [number, number] = [location.coords.longitude, location.coords.latitude];
-            setCenter(newCenter);
-            cameraRef.current?.setCamera({
-                centerCoordinate: newCenter,
-                zoomLevel: DEFAULT_ZOOM,
-                animationDuration: 500,
-            });
-            handleRegionChange(newCenter[0], newCenter[1]);
+            const lat = location.coords.latitude;
+            const lng = location.coords.longitude;
+            setCenter({ lat, lng });
+
+            // Fly map to GPS location once WebView is ready
+            if (mapReady) {
+                webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}); true;`);
+            }
+            handleRegionChange(lat, lng);
         } catch (error) {
             if (__DEV__) console.error("Error getting location:", error);
         } finally {
@@ -85,7 +137,14 @@ export default function MapPickerScreen() {
         }
     };
 
-    const handleRegionChange = useCallback((lng: number, lat: number) => {
+    // Once map is ready and we got GPS location before map loaded, fly there
+    useEffect(() => {
+        if (mapReady && !params.initialLat && center.lat !== DEFAULT_CENTER.lat) {
+            webViewRef.current?.injectJavaScript(`window.flyToLocation(${center.lat}, ${center.lng}); true;`);
+        }
+    }, [mapReady]);
+
+    const handleRegionChange = useCallback((lat: number, lng: number) => {
         setIsGeocoding(true);
         debouncedReverseGeocode(lat, lng, (result) => {
             setGeocodedAddress(result);
@@ -93,11 +152,23 @@ export default function MapPickerScreen() {
         });
     }, []);
 
+    const onWebViewMessage = (event: WebViewMessageEvent) => {
+        try {
+            const data = JSON.parse(event.nativeEvent.data);
+            if (data.type === "regionChange") {
+                setCenter({ lat: data.lat, lng: data.lng });
+                handleRegionChange(data.lat, data.lng);
+            }
+        } catch (e) {
+            // ignore parse errors
+        }
+    };
+
     const handleConfirm = () => {
         dispatch(
             setMapPickerResult({
-                latitude: center[1],
-                longitude: center[0],
+                latitude: center.lat,
+                longitude: center.lng,
                 geocodedAddress,
             })
         );
@@ -116,51 +187,31 @@ export default function MapPickerScreen() {
                 accuracy: Location.Accuracy.Balanced,
             });
 
-            const newCenter: [number, number] = [location.coords.longitude, location.coords.latitude];
-            cameraRef.current?.setCamera({
-                centerCoordinate: newCenter,
-                zoomLevel: DEFAULT_ZOOM,
-                animationDuration: 800,
-            });
+            const lat = location.coords.latitude;
+            const lng = location.coords.longitude;
+            webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}); true;`);
         } catch (error) {
             if (__DEV__) console.error("Error getting location:", error);
         }
     };
 
-    const transformRequest: MapLibreGL.RequestTransformer = (url) => {
-        if (url.includes("api.olamaps.io")) {
-            const separator = url.includes("?") ? "&" : "?";
-            return { url: `${url}${separator}api_key=${OLA_MAPS_API_KEY}` };
-        }
-        return { url };
-    };
-
     return (
         <View className="flex-1 bg-white">
-            {/* Map */}
-            <MapLibreGL.MapView
+            {/* Map WebView */}
+            <WebView
+                ref={webViewRef}
+                source={{ html: getMapHTML(initialCenter.lat, initialCenter.lng, DEFAULT_ZOOM) }}
                 style={{ flex: 1 }}
-                styleURL={OLA_STYLE_URL}
-                mapViewTransformRequest={transformRequest}
-                onRegionDidChange={(feature) => {
-                    const coords = (feature as any).geometry?.coordinates ||
-                        (feature as any).properties?.center;
-                    if (coords) {
-                        setCenter([coords[0], coords[1]]);
-                        handleRegionChange(coords[0], coords[1]);
-                    }
-                }}
-                attributionEnabled={false}
-                logoEnabled={false}
-            >
-                <MapLibreGL.Camera
-                    ref={cameraRef}
-                    defaultSettings={{
-                        centerCoordinate: center,
-                        zoomLevel: DEFAULT_ZOOM,
-                    }}
-                />
-            </MapLibreGL.MapView>
+                onMessage={onWebViewMessage}
+                onLoadEnd={() => setMapReady(true)}
+                javaScriptEnabled
+                domStorageEnabled
+                scrollEnabled={false}
+                bounces={false}
+                overScrollMode="never"
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+            />
 
             {/* Fixed Center Pin */}
             <View

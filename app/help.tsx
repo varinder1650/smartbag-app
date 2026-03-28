@@ -10,7 +10,8 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 
 type Ticket = {
-    id: string;
+    _id: string;
+    id?: string;
     subject: string;
     created_at: string;
     status: string;
@@ -85,7 +86,7 @@ export default function Help() {
 
             <FlatList
                 data={tickets}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item._id || item.id || String(Math.random())}
                 renderItem={renderTicket}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}

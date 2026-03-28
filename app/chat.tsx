@@ -41,6 +41,7 @@ export default function ChatScreen() {
     const flatListRef = useRef<FlatList>(null);
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Start or resume chat
     useEffect(() => {
@@ -49,6 +50,7 @@ export default function ChatScreen() {
             wsRef.current?.close();
             if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
             if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
         };
     }, []);
 
@@ -60,11 +62,33 @@ export default function ChatScreen() {
             setTicketId(data.ticket_id);
             setMessages(data.messages || []);
             connectWebSocket(data.ticket_id);
+            startPolling(data.ticket_id);
         } catch (e) {
             if (__DEV__) console.error("Failed to start chat:", e);
         } finally {
             setLoading(false);
         }
+    };
+
+    // Poll for new messages every 5 seconds (catches admin replies from separate backend)
+    const startPolling = (chatTicketId: string) => {
+        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = setInterval(async () => {
+            try {
+                const res = await api.get("/support/chat/active");
+                const chat = res.data?.active_chat;
+                if (chat && chat.messages) {
+                    setMessages((prev) => {
+                        if (chat.messages.length > prev.length) {
+                            return chat.messages;
+                        }
+                        return prev;
+                    });
+                }
+            } catch {
+                // Silently ignore polling errors
+            }
+        }, 5000);
     };
 
     const connectWebSocket = async (chatTicketId: string) => {

@@ -1,5 +1,5 @@
-import { clearMapPickerResult } from "@/slices/mapPickerSlice";
 import { saveAddress } from "@/slices/addressSlice";
+import { clearMapPickerResult } from "@/slices/mapPickerSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store/store";
 import { AddressEdit } from "@/types/address.types";
@@ -276,218 +276,216 @@ export default function AddressModal({
     return (
         <Modal visible={visible} animationType="slide" transparent>
             <KeyboardAvoidingView
-                behavior="padding"
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
                 style={{ flex: 1 }}
             >
-                <Pressable
-                    className="flex-1 bg-black/40"
-                    onPress={onClose}
-                >
-                    <View style={{ flex: 1 }} />
-
+                <View className="flex-1 justify-end">
                     <Pressable
-                        onPress={(e) => e.stopPropagation()}
-                        style={{ maxHeight: '90%' }}
+                        className="absolute top-0 bottom-0 left-0 right-0 bg-black/40"
+                        onPress={onClose}
+                    />
+
+                    <View
+                        className="bg-white rounded-t-3xl"
+                        style={{ maxHeight: '90%', flexShrink: 1 }}
                     >
-                        <View className="bg-white rounded-t-3xl">
-                            {/* Handle Bar */}
-                            <View className="items-center pt-3 pb-2">
-                                <View className="w-12 h-1 bg-gray-300 rounded-full" />
-                            </View>
+                        {/* Handle Bar */}
+                        <View className="items-center pt-3 pb-2">
+                            <View className="w-12 h-1 bg-gray-300 rounded-full" />
+                        </View>
 
-                            {/* Header */}
-                            <View className="flex-row items-center justify-between px-5 pb-4">
-                                <Text className="text-xl font-bold text-gray-900">
-                                    {form._id ? "Edit Address" : "Add Address"}
-                                </Text>
-                                <Pressable
-                                    onPress={onClose}
-                                    className="w-9 h-9 items-center justify-center rounded-full bg-gray-100"
-                                >
-                                    <Ionicons name="close" size={20} color="#6B7280" />
-                                </Pressable>
-                            </View>
-
-                            <ScrollView
-                                className="px-5"
-                                showsVerticalScrollIndicator={false}
-                                keyboardShouldPersistTaps="handled"
-                                contentContainerStyle={{ paddingBottom: insets.bottom || 20 }}
+                        {/* Header */}
+                        <View className="flex-row items-center justify-between px-5 pb-4">
+                            <Text className="text-xl font-bold text-gray-900">
+                                {form._id ? "Edit Address" : "Add Address"}
+                            </Text>
+                            <Pressable
+                                onPress={onClose}
+                                className="w-9 h-9 items-center justify-center rounded-full bg-gray-100"
                             >
-                                {/* Label Selection */}
-                                <View className="mb-5">
-                                    <Text className="text-sm font-semibold text-gray-700 mb-2">
-                                        Address Type
-                                    </Text>
-                                    <View className="flex-row">
-                                        {["Home", "Office", "Other"].map((field) => {
-                                            const isSelected = form.label === field;
-                                            return (
-                                                <Pressable
-                                                    key={field}
-                                                    onPress={() => handleChange("label", field)}
-                                                    className={`rounded-xl px-5 py-2.5 items-center mr-2 border ${isSelected
-                                                        ? "bg-primary border-primary"
-                                                        : "bg-gray-50 border-gray-200"
-                                                        }`}
-                                                >
-                                                    <Text className={`font-semibold ${isSelected ? "text-white" : "text-gray-700"
-                                                        }`}>
-                                                        {field}
-                                                    </Text>
-                                                </Pressable>
-                                            );
-                                        })}
-                                    </View>
-                                </View>
+                                <Ionicons name="close" size={20} color="#6B7280" />
+                            </Pressable>
+                        </View>
 
-                                {/* Pick on Map Button */}
-                                <Pressable
-                                    onPress={() => {
-                                        onClose();
-                                        router.push({
-                                            pathname: "/map-picker",
-                                            params: form.latitude && form.longitude
-                                                ? { initialLat: String(form.latitude), initialLng: String(form.longitude) }
-                                                : {},
-                                        } as any);
-                                    }}
-                                    className="mb-5 flex-row items-center border border-primary/30 bg-primary/5 rounded-xl px-4 py-3.5"
-                                >
-                                    <Ionicons name="map-outline" size={22} color="#007AFF" />
-                                    <View className="flex-1 ml-3">
-                                        <Text className="text-sm font-semibold text-primary">
-                                            {form.latitude ? "Change pin on map" : "Pick location on map"}
+                        <ScrollView
+                            className="px-5"
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="handled"
+                            contentContainerStyle={{ paddingBottom: insets.bottom || 20 }}
+                        >
+                            {/* Label Selection */}
+                            <View className="mb-5">
+                                <Text className="text-sm font-semibold text-gray-700 mb-2">
+                                    Address Type
+                                </Text>
+                                <View className="flex-row">
+                                    {["Home", "Office", "Other"].map((field) => {
+                                        const isSelected = form.label === field;
+                                        return (
+                                            <Pressable
+                                                key={field}
+                                                onPress={() => handleChange("label", field)}
+                                                className={`rounded-xl px-5 py-2.5 items-center mr-2 border ${isSelected
+                                                    ? "bg-primary border-primary"
+                                                    : "bg-gray-50 border-gray-200"
+                                                    }`}
+                                            >
+                                                <Text className={`font-semibold ${isSelected ? "text-white" : "text-gray-700"
+                                                    }`}>
+                                                    {field}
+                                                </Text>
+                                            </Pressable>
+                                        );
+                                    })}
+                                </View>
+                            </View>
+
+                            {/* Pick on Map Button */}
+                            <Pressable
+                                onPress={() => {
+                                    onClose();
+                                    router.push({
+                                        pathname: "/map-picker",
+                                        params: form.latitude && form.longitude
+                                            ? { initialLat: String(form.latitude), initialLng: String(form.longitude) }
+                                            : {},
+                                    } as any);
+                                }}
+                                className="mb-5 flex-row items-center border border-primary/30 bg-primary/5 rounded-xl px-4 py-3.5"
+                            >
+                                <Ionicons name="map-outline" size={22} color="#007AFF" />
+                                <View className="flex-1 ml-3">
+                                    <Text className="text-sm font-semibold text-primary">
+                                        {form.latitude ? "Change pin on map" : "Pick location on map"}
+                                    </Text>
+                                    {form.latitude && (
+                                        <Text className="text-xs text-gray-500 mt-0.5">
+                                            Location pinned
                                         </Text>
-                                        {form.latitude && (
-                                            <Text className="text-xs text-gray-500 mt-0.5">
-                                                Location pinned
+                                    )}
+                                </View>
+                                <Ionicons name="chevron-forward" size={18} color="#007AFF" />
+                            </Pressable>
+
+                            {/* Input Fields */}
+                            <View className="space-y-3">
+                                {fieldConfigs.map(({ key, placeholder, icon, keyboard, maxLength, disabled, autoComplete }) => (
+                                    <View key={key} className="mb-4">
+                                        <Text className="text-sm font-semibold text-gray-700 mb-2">
+                                            {placeholder}
+                                            {autoComplete && (
+                                                <Text className="text-xs font-normal text-gray-500">
+                                                    {" "}(Auto-fills city & state)
+                                                </Text>
+                                            )}
+                                        </Text>
+                                        <View className={`flex-row items-center border rounded-xl px-4 ${disabled
+                                            ? "bg-gray-50 border-gray-200"
+                                            : pincodeValidation.isActive && key === "pincode"
+                                                ? "bg-green-50 border-green-500"
+                                                : pincodeValidation.error && key === "pincode"
+                                                    ? "bg-red-50 border-red-500"
+                                                    : "bg-white border-gray-300"
+                                            }`}>
+                                            <Ionicons
+                                                name={icon as any}
+                                                size={20}
+                                                color={
+                                                    pincodeValidation.isActive && key === "pincode"
+                                                        ? "#22C55E"
+                                                        : pincodeValidation.error && key === "pincode"
+                                                            ? "#EF4444"
+                                                            : "#9CA3AF"
+                                                }
+                                            />
+                                            <TextInput
+                                                placeholder={`Enter ${placeholder.toLowerCase()}`}
+                                                placeholderTextColor="#9CA3AF"
+                                                value={(form as any)[key]}
+                                                onChangeText={(v) => handleChange(key as any, v)}
+                                                keyboardType={keyboard as any}
+                                                maxLength={maxLength}
+                                                editable={!disabled}
+                                                className={`flex-1 py-3.5 px-3 ${disabled ? "text-gray-500" : "text-gray-900"
+                                                    }`}
+                                                style={{
+                                                    color: disabled ? '#6B7280' : '#111827'
+                                                }}
+                                            />
+                                            {/* Loading indicator for pincode validation */}
+                                            {key === "pincode" && pincodeValidation.isLoading && (
+                                                <ActivityIndicator size="small" color="#3B82F6" />
+                                            )}
+                                            {/* Success checkmark */}
+                                            {key === "pincode" && pincodeValidation.isActive && !pincodeValidation.isLoading && (
+                                                <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+                                            )}
+                                            {/* Error icon */}
+                                            {key === "pincode" && pincodeValidation.error && !pincodeValidation.isLoading && (
+                                                <Ionicons name="close-circle" size={20} color="#EF4444" />
+                                            )}
+                                        </View>
+
+                                        {/* Helper text for pincode */}
+                                        {key === "pincode" && pincodeValidation.isActive && !pincodeValidation.isLoading && (
+                                            <Text className="text-xs text-green-600 mt-1 ml-1">
+                                                ✓ Delivery available in your area
+                                            </Text>
+                                        )}
+                                        {key === "pincode" && pincodeValidation.error && !pincodeValidation.isLoading && (
+                                            <Text className="text-xs text-red-600 mt-1 ml-1">
+                                                ✗ Delivery not available in this area
+                                            </Text>
+                                        )}
+
+                                        {/* Helper text for disabled fields */}
+                                        {disabled && (form as any)[key] && (
+                                            <Text className="text-xs text-gray-500 mt-1 ml-1">
+                                                Auto-filled from pincode
                                             </Text>
                                         )}
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color="#007AFF" />
-                                </Pressable>
+                                ))}
+                            </View>
 
-                                {/* Input Fields */}
-                                <View className="space-y-3">
-                                    {fieldConfigs.map(({ key, placeholder, icon, keyboard, maxLength, disabled, autoComplete }) => (
-                                        <View key={key} className="mb-4">
-                                            <Text className="text-sm font-semibold text-gray-700 mb-2">
-                                                {placeholder}
-                                                {autoComplete && (
-                                                    <Text className="text-xs font-normal text-gray-500">
-                                                        {" "}(Auto-fills city & state)
-                                                    </Text>
-                                                )}
-                                            </Text>
-                                            <View className={`flex-row items-center border rounded-xl px-4 ${disabled
-                                                ? "bg-gray-50 border-gray-200"
-                                                : pincodeValidation.isActive && key === "pincode"
-                                                    ? "bg-green-50 border-green-500"
-                                                    : pincodeValidation.error && key === "pincode"
-                                                        ? "bg-red-50 border-red-500"
-                                                        : "bg-white border-gray-300"
-                                                }`}>
-                                                <Ionicons
-                                                    name={icon as any}
-                                                    size={20}
-                                                    color={
-                                                        pincodeValidation.isActive && key === "pincode"
-                                                            ? "#22C55E"
-                                                            : pincodeValidation.error && key === "pincode"
-                                                                ? "#EF4444"
-                                                                : "#9CA3AF"
-                                                    }
-                                                />
-                                                <TextInput
-                                                    placeholder={`Enter ${placeholder.toLowerCase()}`}
-                                                    placeholderTextColor="#9CA3AF"
-                                                    value={(form as any)[key]}
-                                                    onChangeText={(v) => handleChange(key as any, v)}
-                                                    keyboardType={keyboard as any}
-                                                    maxLength={maxLength}
-                                                    editable={!disabled}
-                                                    className={`flex-1 py-3.5 px-3 ${disabled ? "text-gray-500" : "text-gray-900"
-                                                        }`}
-                                                    style={{
-                                                        color: disabled ? '#6B7280' : '#111827'
-                                                    }}
-                                                />
-                                                {/* Loading indicator for pincode validation */}
-                                                {key === "pincode" && pincodeValidation.isLoading && (
-                                                    <ActivityIndicator size="small" color="#3B82F6" />
-                                                )}
-                                                {/* Success checkmark */}
-                                                {key === "pincode" && pincodeValidation.isActive && !pincodeValidation.isLoading && (
-                                                    <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
-                                                )}
-                                                {/* Error icon */}
-                                                {key === "pincode" && pincodeValidation.error && !pincodeValidation.isLoading && (
-                                                    <Ionicons name="close-circle" size={20} color="#EF4444" />
-                                                )}
-                                            </View>
-
-                                            {/* Helper text for pincode */}
-                                            {key === "pincode" && pincodeValidation.isActive && !pincodeValidation.isLoading && (
-                                                <Text className="text-xs text-green-600 mt-1 ml-1">
-                                                    ✓ Delivery available in your area
-                                                </Text>
-                                            )}
-                                            {key === "pincode" && pincodeValidation.error && !pincodeValidation.isLoading && (
-                                                <Text className="text-xs text-red-600 mt-1 ml-1">
-                                                    ✗ Delivery not available in this area
-                                                </Text>
-                                            )}
-
-                                            {/* Helper text for disabled fields */}
-                                            {disabled && (form as any)[key] && (
-                                                <Text className="text-xs text-gray-500 mt-1 ml-1">
-                                                    Auto-filled from pincode
-                                                </Text>
-                                            )}
-                                        </View>
-                                    ))}
-                                </View>
-
-                                {/* Service unavailable warning */}
-                                {!pincodeValidation.isActive && form.pincode.length === 6 && !pincodeValidation.isLoading && (
-                                    <View className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-                                        <View className="flex-row items-center mb-2">
-                                            <Ionicons name="alert-circle" size={20} color="#EF4444" />
-                                            <Text className="text-sm font-semibold text-red-800 ml-2">
-                                                Service Unavailable
-                                            </Text>
-                                        </View>
-                                        <Text className="text-xs text-red-700">
-                                            We're sorry, but delivery service is not available in your area yet.
-                                            We're working to expand our coverage!
+                            {/* Service unavailable warning */}
+                            {!pincodeValidation.isActive && form.pincode.length === 6 && !pincodeValidation.isLoading && (
+                                <View className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                                    <View className="flex-row items-center mb-2">
+                                        <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                                        <Text className="text-sm font-semibold text-red-800 ml-2">
+                                            Service Unavailable
                                         </Text>
                                     </View>
-                                )}
-
-                                {/* Save Button */}
-                                <Pressable
-                                    onPress={handleSave}
-                                    disabled={isSubmitDisabled}
-                                    className={`py-4 rounded-xl items-center mt-2 mb-6 shadow-sm ${isSubmitDisabled
-                                        ? "bg-gray-300"
-                                        : "bg-primary"
-                                        }`}
-                                >
-                                    <Text className={`font-bold text-base ${isSubmitDisabled
-                                        ? "text-gray-500"
-                                        : "text-white"
-                                        }`}>
-                                        {pincodeValidation.isLoading
-                                            ? "Validating..."
-                                            : "Save Address"
-                                        }
+                                    <Text className="text-xs text-red-700">
+                                        We're sorry, but delivery service is not available in your area yet.
+                                        We're working to expand our coverage!
                                     </Text>
-                                </Pressable>
-                            </ScrollView>
-                        </View>
-                    </Pressable>
-                </Pressable>
+                                </View>
+                            )}
+
+                            {/* Save Button */}
+                            <Pressable
+                                onPress={handleSave}
+                                disabled={isSubmitDisabled}
+                                className={`py-4 rounded-xl items-center mt-2 mb-6 shadow-sm ${isSubmitDisabled
+                                    ? "bg-gray-300"
+                                    : "bg-primary"
+                                    }`}
+                            >
+                                <Text className={`font-bold text-base ${isSubmitDisabled
+                                    ? "text-gray-500"
+                                    : "text-white"
+                                    }`}>
+                                    {pincodeValidation.isLoading
+                                        ? "Validating..."
+                                        : "Save Address"
+                                    }
+                                </Text>
+                            </Pressable>
+                        </ScrollView>
+                    </View>
+                </View>
             </KeyboardAvoidingView>
         </Modal>
     );

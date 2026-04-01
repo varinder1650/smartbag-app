@@ -5,11 +5,13 @@ import TicketDetailsModal from "@/components/tickets/TicketDetailsModal";
 import TitleBar from "@/components/TitleBar";
 import api from "@/utils/client";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 
 type Ticket = {
-    id: string;
+    _id: string;
+    id?: string;
     subject: string;
     created_at: string;
     status: string;
@@ -22,6 +24,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Help() {
+    const router = useRouter();
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(false);
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -83,16 +86,39 @@ export default function Help() {
 
             <FlatList
                 data={tickets}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item._id || item.id || String(Math.random())}
                 renderItem={renderTicket}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
                 ListHeaderComponent={
-                    <ContactUsSection
-                        phoneNumber="9463256364"
-                        email="smartbag.help@gmail.com"
-                        whatsappNumber="9463256364"
-                    />
+                    <>
+                        <ContactUsSection
+                            phoneNumber="9463256364"
+                            email="smartbag.help@gmail.com"
+                            whatsappNumber="9463256364"
+                        />
+
+                        {/* Chat with us button */}
+                        <Pressable
+                            onPress={() => router.push("/chat")}
+                            className="bg-blue-600 rounded-2xl p-4 my-4 flex-row items-center justify-between"
+                        >
+                            <View className="flex-row items-center">
+                                <View className="bg-white/20 p-2.5 rounded-full mr-3">
+                                    <Ionicons name="chatbubbles" size={22} color="white" />
+                                </View>
+                                <View>
+                                    <Text className="text-white font-bold text-base">Chat with us</Text>
+                                    <Text className="text-white/70 text-xs mt-0.5">Get instant help from our team</Text>
+                                </View>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color="white" />
+                        </Pressable>
+
+                        {tickets.length > 0 && (
+                            <Text className="text-gray-500 text-sm font-semibold mb-2 mt-2">Your Tickets</Text>
+                        )}
+                    </>
                 }
                 ListEmptyComponent={
                     <View className="flex-1 justify-center items-center mt-12">

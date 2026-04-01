@@ -23,7 +23,6 @@ function ProductCard({ id, images, name, actual_price, selling_price, discount, 
 
     const fallbackImage = require("../../assets/prod.webp");
     const imageSource = images && images.length > 0 ? { uri: images[0] } : fallbackImage;
-    // console.log("allow_user_images", cartItem);
     const in_stock = stock > 0;
     return (
         <View className="w-28 mr-3">

@@ -1,3 +1,4 @@
+import { getStatusConfig } from "@/constants/statusConfig";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
@@ -18,31 +19,8 @@ type Props = {
     onPress?: (order: Order) => void;
 };
 
-const statusColors: Record<string, string> = {
-    confirmed: "bg-blue-500",
-    preparing: "bg-yellow-500",
-    assigning: "bg-orange-500",
-    assigned: "bg-purple-500",
-    out_for_delivery: "bg-green-500",
-    arrived: "bg-indigo-500",
-    delivered: "bg-gray-500",
-    cancelled: "bg-red-500",
-    unknown: "bg-gray-300",
-};
 
-const statusIcons: Record<string, string> = {
-    confirmed: "checkmark-circle",
-    preparing: "restaurant",
-    assigning: "search",
-    assigned: "person",
-    out_for_delivery: "bicycle",
-    arrived: "location",
-    delivered: "checkmark-done",
-    cancelled: "close-circle",
-    unknown: "help-circle",
-};
-
-export default function OrderCard({ order, onPress }: Props) {
+function OrderCard({ order, onPress }: Props) {
     if (!order) return null;
     const { order_id, id, created_at, delivered_at, order_status, total_amount, order_type } = order;
 
@@ -64,14 +42,10 @@ export default function OrderCard({ order, onPress }: Props) {
         })
         : null;
 
-    const displayStatus = order_status
-        ? order_status.replace(/_/g, " ").split(' ').map(word =>
-            word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ')
-        : "Unknown";
-
-    const statusColor = statusColors[order_status || "unknown"];
-    const statusIcon = statusIcons[order_status || "unknown"];
+    const config = getStatusConfig(order_status || "unknown");
+    const displayStatus = config.label;
+    const statusColor = config.color;
+    const statusIcon = config.icon;
     const isActive = order_status && !["delivered", "cancelled"].includes(order_status);
 
     const handlePress = () => {
@@ -153,3 +127,5 @@ export default function OrderCard({ order, onPress }: Props) {
         </Pressable>
     );
 }
+
+export default React.memo(OrderCard);

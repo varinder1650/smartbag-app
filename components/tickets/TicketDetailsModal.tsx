@@ -5,7 +5,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 interface TicketDetailsModalProps {
     visible: boolean;
     onClose: () => void;
-    ticket: { id: string; subject: string; created_at: string; status: string; message?: string; orderId?: string } | null;
+    ticket: { _id: string; subject: string; created_at: string; status: string; message?: string; orderId?: string } | null;
 }
 
 export default function TicketDetailsModal({ visible, onClose, ticket }: TicketDetailsModalProps) {

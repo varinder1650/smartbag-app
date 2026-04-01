@@ -10,13 +10,18 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.smartbag.app"
+      "bundleIdentifier": "com.smartbag.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SmartBag needs your location to help you pin your delivery address on the map."
+      }
     },
     "android": {
       "package": "com.smartbag.app",
       "permissions": [
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -33,7 +38,6 @@
       "bundler": "metro"
     },
     "plugins": [
-      // "@react-native-google-signin/google-signin",
       "expo-router",
       [
         "expo-splash-screen",
@@ -48,7 +52,14 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SmartBag needs your location to help you pin your delivery address on the map."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

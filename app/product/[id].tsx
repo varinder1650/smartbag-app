@@ -1,5 +1,5 @@
 
-import Cartbutton from "@/components/cartbutton";
+import Cartbutton from "@/components/CartButton";
 import SafeView from "@/components/SafeView";
 import { Product } from "@/types/products.types";
 import { loadProductDetails } from "@/utils/products";

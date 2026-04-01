@@ -3,7 +3,7 @@ import TitleBar from "@/components/TitleBar";
 import { updateProfile } from "@/slices/authSlice";
 import { AppDispatch } from "@/store/store";
 import { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function EditProfile() {
@@ -12,7 +12,12 @@ export default function EditProfile() {
     const dispatch = useDispatch<AppDispatch>();
 
     const handleUpdateProfile = async () => {
-        await dispatch(updateProfile(name));
+        try {
+            await dispatch(updateProfile(name)).unwrap();
+            Alert.alert("Success", "Profile updated successfully");
+        } catch {
+            Alert.alert("Error", "Failed to update profile. Please try again.");
+        }
     };
 
     return (

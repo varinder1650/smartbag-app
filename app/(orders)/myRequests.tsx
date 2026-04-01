@@ -21,16 +21,21 @@ export default function MyRequests() {
 
     const [selectedRequest, setSelectedRequest] = useState<Requests | null>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchRequests = async (pageNum = 1) => {
         setLoading(true);
+        setError(null);
         try {
             const res = await api.get(`/support/product-requests?page=${pageNum}&limit=10`);
             if (pageNum === 1) setRequests(res.data);
             else setRequests((prev) => [...prev, ...res.data]);
             setHasNextPage(res.data.length === 10);
-        } catch (e) {
+        } catch (e: any) {
             if (__DEV__) console.error("Failed to fetch requests", e);
+            if (pageNum === 1) {
+                setError(e?.response?.data?.message || "Failed to load requests. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
@@ -71,6 +76,16 @@ export default function MyRequests() {
         return (
             <View className="flex-1 justify-center items-center mt-10">
                 <ActivityIndicator size="large" color="#2563EB" />
+            </View>
+        );
+
+    if (error && requests.length === 0)
+        return (
+            <View className="flex-1 justify-center items-center mt-10 px-6">
+                <Text className="text-red-500 text-base text-center mb-4">{error}</Text>
+                <Pressable onPress={() => fetchRequests()} className="bg-primary px-6 py-3 rounded-xl">
+                    <Text className="text-white font-bold">Retry</Text>
+                </Pressable>
             </View>
         );
 

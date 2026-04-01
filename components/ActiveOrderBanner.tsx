@@ -150,13 +150,6 @@ export default function ActiveOrderBanner() {
                             >
                                 <Ionicons name="close" size={14} color="white" />
                             </Pressable>
-
-                            <View className="flex-row items-center">
-                                <Text className="text-white/80 text-xs mr-1">
-                                    Track
-                                </Text>
-                                <Ionicons name="chevron-forward" size={16} color="white" />
-                            </View>
                         </View>
                     </View>
                 </View>

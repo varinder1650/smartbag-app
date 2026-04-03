@@ -165,8 +165,6 @@ export default function ActiveOrderBanner() {
         );
     };
 
-
-
     const { width: SCREEN_WIDTH } = Dimensions.get('window');
     const BANNER_WIDTH = SCREEN_WIDTH - 32; // 32 = mx-4 margin (16*2)
 

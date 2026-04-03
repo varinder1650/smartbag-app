@@ -23,7 +23,11 @@ export default function AssignedOrders() {
                 setOrders(newOrders);
                 setPage(2);
             } else {
-                setOrders(prev => [...prev, ...newOrders]);
+                setOrders(prev => {
+                    const existingIds = new Set(prev.map(o => o.id));
+                    const uniqueNewOrders = newOrders.filter(o => !existingIds.has(o.id));
+                    return [...prev, ...uniqueNewOrders];
+                });
                 setPage(pageNumber + 1);
             }
 
@@ -52,15 +56,6 @@ export default function AssignedOrders() {
             </View>
         ) : null;
 
-    if (!loading && orders.length === 0) {
-        return (
-            <View className="flex-1 bg-white">
-                <View className="px-6 justify-center items-center">
-                    <Text className="text-gray-500 text-lg">No assigned orders</Text>
-                </View>
-            </View>
-        );
-    }
 
     return (
         <SafeView className="flex-1 bg-white">
@@ -84,7 +79,14 @@ export default function AssignedOrders() {
                         tintColor="#2563EB"
                     />
                 }
-                contentContainerStyle={{ paddingBottom: 32 }}
+                ListEmptyComponent={
+                    !loading ? (
+                        <View className="flex-1 justify-center items-center px-6 mt-10">
+                            <Text className="text-gray-500 text-lg">No assigned orders</Text>
+                        </View>
+                    ) : null
+                }
+                contentContainerStyle={{ paddingBottom: 32, flexGrow: 1 }}
             />
         </SafeView>
     );

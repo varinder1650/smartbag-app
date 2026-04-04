@@ -5,9 +5,10 @@ interface PricingFooterProps {
     price: number;
     isUploading: boolean;
     onAddToCart: () => void;
+    label?: string;
 }
 
-function PricingFooter({ price, isUploading, onAddToCart }: PricingFooterProps) {
+function PricingFooter({ price, isUploading, onAddToCart, label }: PricingFooterProps) {
     return (
         <View className="absolute bottom-0 w-full px-4 pb-6 bg-white border-t border-gray-200">
             <Pressable
@@ -16,7 +17,7 @@ function PricingFooter({ price, isUploading, onAddToCart }: PricingFooterProps) 
                 className={`py-4 rounded-2xl items-center ${isUploading ? "bg-gray-400" : "bg-primary"}`}
             >
                 <Text className="text-white font-bold text-lg">
-                    {isUploading ? "Uploading..." : `Add to Cart • ₹${price}`}
+                    {isUploading ? "Uploading..." : `${label || "Add to Cart"} • ₹${price}`}
                 </Text>
             </Pressable>
         </View>

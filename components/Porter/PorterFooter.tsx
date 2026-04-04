@@ -5,9 +5,14 @@ interface PorterFooterProps {
     price: number;
     isUrgent: boolean;
     onAddToCart: () => void;
+    isEditMode?: boolean;
 }
 
-function PorterFooter({ price, isUrgent, onAddToCart }: PorterFooterProps) {
+function PorterFooter({ price, isUrgent, onAddToCart, isEditMode }: PorterFooterProps) {
+    const label = isEditMode
+        ? (isUrgent ? '⚡ Update Urgent Delivery' : 'Update Cart')
+        : (isUrgent ? '⚡ Add Urgent Delivery' : 'Add to Cart');
+
     return (
         <View className="absolute bottom-0 w-full p-4 bg-white border-t">
             <Pressable
@@ -15,7 +20,7 @@ function PorterFooter({ price, isUrgent, onAddToCart }: PorterFooterProps) {
                 className={`py-4 rounded-xl items-center ${isUrgent ? 'bg-orange-500' : 'bg-primary'}`}
             >
                 <Text className="text-white font-bold">
-                    {isUrgent ? '⚡ Add Urgent Delivery' : 'Add to Cart'} • ₹{price}
+                    {label} • ₹{price}
                 </Text>
             </Pressable>
         </View>

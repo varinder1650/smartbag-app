@@ -162,6 +162,13 @@ export const syncUserCart = createAsyncThunk<CartItem[]>(
 
         const cartItems: CartItem[] = backendItems.map((item: any) => {
             // Convert backend format to BackendCartItem format
+            // Determine service type: check multiple sources
+            const resolvedServiceType =
+                item.product?.serviceType ||
+                item.serviceType ||
+                (item.serviceDetails?.pickupAddress ? 'porter' :
+                 item.serviceDetails?.printType ? 'printout' : 'product');
+
             const backendItem: BackendCartItem = {
                 _id: item._id,
                 productId: item.productId,
@@ -175,7 +182,7 @@ export const syncUserCart = createAsyncThunk<CartItem[]>(
                     discount: item.product?.discount || item.discount || 0,
                     stock: item.product?.stock || item.stock,
                     images: item.product?.images || item.images,
-                    serviceType: item.product?.serviceType || item.serviceType || 'product',
+                    serviceType: resolvedServiceType,
                 },
                 serviceDetails: item.serviceDetails,
             };

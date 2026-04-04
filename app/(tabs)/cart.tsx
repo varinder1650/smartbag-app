@@ -146,18 +146,39 @@ export default function CartScreen() {
                             </View>
                           </View>
 
-                          {/* Remove Button */}
-                          <Pressable
-                            onPress={() => {
-                              dispatch(decreaseQty({ id: item.id, mode }));
-                              if (mode === "user") {
-                                dispatch(syncRemoveItem(item.cartItemId || item.id) as any);
-                              }
-                            }}
-                            className="bg-red-50 w-10 h-10 rounded-full items-center justify-center"
-                          >
-                            <Ionicons name="trash-outline" size={20} color="#EF4444" />
-                          </Pressable>
+                          {/* Edit & Remove Buttons */}
+                          <View className="flex-row gap-2">
+                            <Pressable
+                              onPress={async () => {
+                                const editData = JSON.stringify(item.serviceDetails);
+                                // Remove old item first and WAIT for backend sync
+                                dispatch(decreaseQty({ id: item.id, mode }));
+                                if (mode === "user") {
+                                  await dispatch(syncRemoveItem(item.cartItemId || item.id) as any);
+                                }
+                                // Navigate to service screen with edit data
+                                if (isPorter) {
+                                  router.push({ pathname: "/porter", params: { editData } } as any);
+                                } else if (isPrintout) {
+                                  router.push({ pathname: "/(tabs)/printout", params: { editData } } as any);
+                                }
+                              }}
+                              className="bg-blue-50 w-10 h-10 rounded-full items-center justify-center"
+                            >
+                              <Ionicons name="create-outline" size={20} color="#3B82F6" />
+                            </Pressable>
+                            <Pressable
+                              onPress={() => {
+                                dispatch(decreaseQty({ id: item.id, mode }));
+                                if (mode === "user") {
+                                  dispatch(syncRemoveItem(item.cartItemId || item.id) as any);
+                                }
+                              }}
+                              className="bg-red-50 w-10 h-10 rounded-full items-center justify-center"
+                            >
+                              <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                            </Pressable>
+                          </View>
                         </View>
 
                         {/* Service Details */}

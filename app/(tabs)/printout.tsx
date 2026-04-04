@@ -11,7 +11,7 @@ import {
 import { usePrintoutUploads } from "@/hooks/usePrintoutUploads";
 import { useServiceCartActions } from "@/hooks/useServiceCartActions";
 import { RootState } from "@/store/store";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useSelector } from "react-redux";
@@ -21,13 +21,20 @@ type PrintType = "document" | "photo";
 export default function PrintoutScreen() {
     const router = useRouter();
     const { addPrintoutService } = useServiceCartActions();
+    const params = useLocalSearchParams<{ editData?: string }>();
 
-    const [printType, setPrintType] = useState<PrintType>("document");
-    const [copies, setCopies] = useState("1");
-    const [paperSize, setPaperSize] = useState<"A4" | "A3" | "Legal">("A4");
-    const [photoSize, setPhotoSize] = useState<"Passport" | "4x6" | "5x7">("Passport");
-    const [colorPrinting, setColorPrinting] = useState(false);
-    const [notes, setNotes] = useState("");
+    // Parse edit data if present
+    const editDetails = useMemo(() => {
+        if (!params.editData) return null;
+        try { return JSON.parse(params.editData); } catch { return null; }
+    }, [params.editData]);
+
+    const [printType, setPrintType] = useState<PrintType>(editDetails?.printType || "document");
+    const [copies, setCopies] = useState(editDetails?.copies?.toString() || "1");
+    const [paperSize, setPaperSize] = useState<"A4" | "A3" | "Legal">(editDetails?.paperSize || "A4");
+    const [photoSize, setPhotoSize] = useState<"Passport" | "4x6" | "5x7">(editDetails?.photoSize || "Passport");
+    const [colorPrinting, setColorPrinting] = useState(editDetails?.colorPrinting || false);
+    const [notes, setNotes] = useState(editDetails?.notes || "");
 
     const printoutFee = useSelector((state: RootState) => state.price.printoutFee);
 
@@ -41,7 +48,7 @@ export default function PrintoutScreen() {
         pickPhotos,
         deleteDocument,
         deletePhoto,
-    } = usePrintoutUploads(printType);
+    } = usePrintoutUploads(printType, editDetails?.documents, editDetails?.photos);
 
     const price = useMemo(() => {
         const numCopies = parseInt(copies) || 0;
@@ -155,6 +162,7 @@ export default function PrintoutScreen() {
                 price={price}
                 isUploading={isUploading}
                 onAddToCart={handleAddToCart}
+                label={editDetails ? "Update Cart" : "Add to Cart"}
             />
         </SafeView>
     );

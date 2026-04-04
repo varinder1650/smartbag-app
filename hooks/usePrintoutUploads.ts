@@ -8,9 +8,13 @@ import { Alert } from "react-native";
 
 type PrintType = "document" | "photo";
 
-export function usePrintoutUploads(printType: PrintType) {
-    const [documents, setDocuments] = useState<UploadedDocument[]>([]);
-    const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
+export function usePrintoutUploads(
+    printType: PrintType,
+    initialDocuments?: UploadedDocument[],
+    initialPhotos?: UploadedPhoto[],
+) {
+    const [documents, setDocuments] = useState<UploadedDocument[]>(initialDocuments || []);
+    const [photos, setPhotos] = useState<UploadedPhoto[]>(initialPhotos || []);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
     const [numberOfPages, setNumberOfPages] = useState(0);

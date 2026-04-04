@@ -7,20 +7,20 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert } from "react-native";
 import { useSelector } from "react-redux";
 
-export function usePorterForm() {
+export function usePorterForm(editData?: any) {
     const router = useRouter();
     const { addPorterService } = useServiceCartActions();
 
-    const [pickupAddress, setPickupAddress] = useState<Address | null>(null);
-    const [deliveryAddress, setDeliveryAddress] = useState<Address | null>(null);
-    const [distance, setDistance] = useState("");
-    const [weight, setWeight] = useState("");
-    const [phone, setPhone] = useState("");
-    const [length, setLength] = useState<string | null>(null);
-    const [width, setWidth] = useState<string | null>(null);
-    const [height, setHeight] = useState<string | null>(null);
-    const [notes, setNotes] = useState("");
-    const [isUrgent, setIsUrgent] = useState(false);
+    const [pickupAddress, setPickupAddress] = useState<Address | null>(editData?.pickupAddress || null);
+    const [deliveryAddress, setDeliveryAddress] = useState<Address | null>(editData?.deliveryAddress || null);
+    const [distance, setDistance] = useState(editData?.distance?.toString() || "");
+    const [weight, setWeight] = useState(editData?.weight || "");
+    const [phone, setPhone] = useState(editData?.phone || "");
+    const [length, setLength] = useState<string | null>(editData?.dimensions?.length || null);
+    const [width, setWidth] = useState<string | null>(editData?.dimensions?.width || null);
+    const [height, setHeight] = useState<string | null>(editData?.dimensions?.height || null);
+    const [notes, setNotes] = useState(editData?.notes || "");
+    const [isUrgent, setIsUrgent] = useState(editData?.isUrgent || false);
 
     const selectedPickup = useSelector((state: RootState) => state.addressSelection.pickup);
     const selectedDelivery = useSelector((state: RootState) => state.addressSelection.delivery);
@@ -43,13 +43,13 @@ export function usePorterForm() {
         return Math.round(price);
     }, [distance, length, width, height, isUrgent, porterFee]);
 
-    const handleAddToCart = useCallback(() => {
+    const handleAddToCart = useCallback(async () => {
         if (!pickupAddress || !deliveryAddress || !distance || !weight || !phone || !length || !width || !height) {
             Alert.alert("Error", "All fields are required");
             return;
         }
 
-        addPorterService(
+        const success = await addPorterService(
             {
                 pickupAddress,
                 deliveryAddress,
@@ -60,8 +60,11 @@ export function usePorterForm() {
                 notes,
                 isUrgent,
             },
-            calculatedPrice
+            calculatedPrice,
+            !!editData // skip duplicate check when editing
         );
+
+        if (!success) return;
 
         // Reset form
         setPickupAddress(null);

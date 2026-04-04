@@ -4,6 +4,7 @@ import PricingFooter from "@/components/printout/PricingFooter";
 import PrintOptions from "@/components/printout/PrintOptions";
 import DocumentUI from "@/components/printout/DocumentUI";
 import PhotoUI from "@/components/printout/PhotoUI";
+import UploadSuccessOverlay from "@/components/printout/UploadSuccessOverlay";
 import { usePrintoutUploads } from "@/hooks/usePrintoutUploads";
 import { useServiceCartActions } from "@/hooks/useServiceCartActions";
 import api from "@/utils/client";
@@ -37,6 +38,7 @@ export default function PrintoutScreen() {
         numberOfPages,
         uploadProgress,
         isUploading,
+        uploadSuccess,
         pickDocuments,
         pickPhotos,
         deleteDocument,
@@ -118,6 +120,7 @@ export default function PrintoutScreen() {
 
     return (
         <SafeView className="flex-1 bg-gray-50">
+            <UploadSuccessOverlay visible={uploadSuccess} />
             <TitleBar title="Print Service" subtitle="Documents & Photos" />
 
             <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>

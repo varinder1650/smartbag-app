@@ -89,7 +89,7 @@ export default function Help() {
                 keyExtractor={(item) => item._id || item.id || String(Math.random())}
                 renderItem={renderTicket}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 160 }}
                 ListHeaderComponent={
                     <>
                         <ContactUsSection
@@ -98,25 +98,8 @@ export default function Help() {
                             whatsappNumber="9463256364"
                         />
 
-                        {/* Chat with us button */}
-                        <Pressable
-                            onPress={() => router.push("/chat")}
-                            className="bg-blue-600 rounded-2xl p-4 my-4 flex-row items-center justify-between"
-                        >
-                            <View className="flex-row items-center">
-                                <View className="bg-white/20 p-2.5 rounded-full mr-3">
-                                    <Ionicons name="chatbubbles" size={22} color="white" />
-                                </View>
-                                <View>
-                                    <Text className="text-white font-bold text-base">Chat with us</Text>
-                                    <Text className="text-white/70 text-xs mt-0.5">Get instant help from our team</Text>
-                                </View>
-                            </View>
-                            <Ionicons name="chevron-forward" size={20} color="white" />
-                        </Pressable>
-
                         {tickets.length > 0 && (
-                            <Text className="text-gray-500 text-sm font-semibold mb-2 mt-2">Your Tickets</Text>
+                            <Text className="text-gray-500 text-sm font-semibold mb-2 mt-4">Your Tickets</Text>
                         )}
                     </>
                 }
@@ -141,6 +124,30 @@ export default function Help() {
             <CreateTicketModal visible={showCreateForm} onClose={() => setShowCreateForm(false)} onSubmit={handleCreateTicket} />
             <TicketDetailsModal visible={showDetailsModal} ticket={selectedTicket} onClose={() => setShowDetailsModal(false)} />
 
+            {/* Chat FAB */}
+            <Pressable
+                onPress={() => router.push("/chat")}
+                style={{
+                    position: "absolute",
+                    bottom: 90,
+                    right: 20,
+                    width: 60,
+                    height: 60,
+                    borderRadius: 30,
+                    backgroundColor: "#10B981",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                    elevation: 5,
+                }}
+            >
+                <Ionicons name="chatbubbles" size={26} color="white" />
+            </Pressable>
+
+            {/* Create Ticket FAB */}
             <Pressable
                 onPress={handleAddTicket}
                 style={{
@@ -153,9 +160,14 @@ export default function Help() {
                     backgroundColor: "#2563EB",
                     justifyContent: "center",
                     alignItems: "center",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                    elevation: 5,
                 }}
             >
-                <Text style={{ color: "white", fontSize: 30 }}>+</Text>
+                <Ionicons name="add" size={28} color="white" />
             </Pressable>
         </SafeView>
     );

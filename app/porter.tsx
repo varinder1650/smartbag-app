@@ -7,12 +7,19 @@ import SafeView from "@/components/SafeView";
 import TitleBar from "@/components/TitleBar";
 import { usePorterForm } from "@/hooks/usePorterForm";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useMemo } from "react";
 import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 
 export default function PorterScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams<{ editData?: string }>();
+
+    const editDetails = useMemo(() => {
+        if (!params.editData) return undefined;
+        try { return JSON.parse(params.editData); } catch { return undefined; }
+    }, [params.editData]);
+
     const {
         pickupAddress,
         deliveryAddress,
@@ -27,7 +34,7 @@ export default function PorterScreen() {
         calculatedPrice,
         handleAddToCart,
         renderAddress,
-    } = usePorterForm();
+    } = usePorterForm(editDetails);
 
     return (
         <SafeView className="flex-1 bg-white">
@@ -58,8 +65,14 @@ export default function PorterScreen() {
                         <TextInput
                             value={distance}
                             onChangeText={setDistance}
+                            onBlur={() => {
+                                const d = parseFloat(distance);
+                                if (!isNaN(d) && d < 1) {
+                                    setDistance("1");
+                                }
+                            }}
                             keyboardType="numeric"
-                            placeholder="Enter distance in km"
+                            placeholder="Min 1 km"
                             className="border rounded-xl px-4 py-3"
                         />
                     </FormCard>
@@ -120,7 +133,7 @@ export default function PorterScreen() {
                 </View>
             </ScrollView>
 
-            <PorterFooter price={calculatedPrice} isUrgent={isUrgent} onAddToCart={handleAddToCart} />
+            <PorterFooter price={calculatedPrice} isUrgent={isUrgent} onAddToCart={handleAddToCart} isEditMode={!!editDetails} />
         </SafeView>
     );
 }

@@ -8,11 +8,16 @@ import { Alert } from "react-native";
 
 type PrintType = "document" | "photo";
 
-export function usePrintoutUploads(printType: PrintType) {
-    const [documents, setDocuments] = useState<UploadedDocument[]>([]);
-    const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
+export function usePrintoutUploads(
+    printType: PrintType,
+    initialDocuments?: UploadedDocument[],
+    initialPhotos?: UploadedPhoto[],
+) {
+    const [documents, setDocuments] = useState<UploadedDocument[]>(initialDocuments || []);
+    const [photos, setPhotos] = useState<UploadedPhoto[]>(initialPhotos || []);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState(false);
     const [numberOfPages, setNumberOfPages] = useState(0);
 
     // Recompute total pages when documents change
@@ -78,13 +83,14 @@ export function usePrintoutUploads(printType: PrintType) {
             if (docs.length > 0) {
                 setDocuments((prev) => [...prev, ...docs]);
                 setUploadProgress(100);
-                Alert.alert("Success", `${docs.length} document(s) uploaded successfully`);
+                setUploadSuccess(true);
             }
 
             setTimeout(() => {
                 setUploadProgress(0);
                 setIsUploading(false);
-            }, 500);
+                setUploadSuccess(false);
+            }, 1500);
         } catch (error) {
             if (__DEV__) console.error("Error picking documents:", error);
             Alert.alert("Error", "Failed to pick documents. Please try again.");
@@ -136,13 +142,14 @@ export function usePrintoutUploads(printType: PrintType) {
             if (uploadedPhotos.length > 0) {
                 setPhotos((prev) => [...prev, ...uploadedPhotos]);
                 setUploadProgress(100);
-                Alert.alert("Success", `${uploadedPhotos.length} photo(s) uploaded successfully`);
+                setUploadSuccess(true);
             }
 
             setTimeout(() => {
                 setUploadProgress(0);
                 setIsUploading(false);
-            }, 500);
+                setUploadSuccess(false);
+            }, 1500);
         } catch (error) {
             if (__DEV__) console.error("Error picking photos:", error);
             Alert.alert("Error", "Failed to pick photos. Please try again.");
@@ -165,6 +172,7 @@ export function usePrintoutUploads(printType: PrintType) {
         numberOfPages,
         uploadProgress,
         isUploading,
+        uploadSuccess,
         pickDocuments,
         pickPhotos,
         deleteDocument,

@@ -228,8 +228,13 @@ export default function ChatScreen() {
     }
 
     return (
-        <SafeView edges={["top"]} className="flex-1 bg-white">
-            <TitleBar
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : (Platform.OS === 'android' ? "padding" : "height")}
+            className="flex-1 bg-white"
+            keyboardVerticalOffset={0}
+        >
+            <SafeView edges={["top"]} className="flex-1">
+                <TitleBar
                 title="Chat Support"
                 subtitle=""
                 rightAction={
@@ -246,11 +251,6 @@ export default function ChatScreen() {
                 }
             />
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                className="flex-1"
-                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-            >
                 {/* Messages */}
                 <FlatList
                     ref={flatListRef}
@@ -303,7 +303,7 @@ export default function ChatScreen() {
                         )}
                     </Pressable>
                 </View>
-            </KeyboardAvoidingView>
-        </SafeView>
+            </SafeView>
+        </KeyboardAvoidingView>
     );
 }

@@ -14,20 +14,23 @@ export function useServiceCartActions() {
 
     const addPorterService = async (
         details: PorterServiceDetails,
-        selling_price: number
+        selling_price: number,
+        skipDuplicateCheck = false
     ) => {
-        // Check if porter service already exists in cart
-        const hasPorterService = Object.values(cartItems).some(
-            item => item.serviceType === 'porter'
-        );
-
-        if (hasPorterService) {
-            Alert.alert(
-                'Service Already Added',
-                'You already have a porter service in your cart. Please remove it first if you want to add a different one.',
-                [{ text: 'OK' }]
+        // Check if porter service already exists in cart (skip during edit flow)
+        if (!skipDuplicateCheck) {
+            const hasPorterService = Object.values(cartItems).some(
+                item => item.serviceType === 'porter'
             );
-            return false;
+
+            if (hasPorterService) {
+                Alert.alert(
+                    'Service Already Added',
+                    'You already have a porter service in your cart. Please remove it first if you want to add a different one.',
+                    [{ text: 'OK' }]
+                );
+                return false;
+            }
         }
 
         const serviceItem: CartItem = {

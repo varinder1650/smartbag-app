@@ -39,7 +39,7 @@ export function usePorterForm(editData?: any) {
             return;
         }
         const d = parseFloat(distance);
-        if (isNaN(d) || d <= 0) {
+        if (isNaN(d) || d < 1) {
             setCalculatedPrice(0);
             return;
         }
@@ -73,11 +73,17 @@ export function usePorterForm(editData?: any) {
             return;
         }
 
+        const parsedDistance = parseFloat(distance);
+        if (isNaN(parsedDistance) || parsedDistance < 1) {
+            Alert.alert("Invalid Distance", "Minimum distance should be 1 km");
+            return;
+        }
+
         const success = await addPorterService(
             {
                 pickupAddress,
                 deliveryAddress,
-                distance: parseFloat(distance),
+                distance: parsedDistance,
                 weight,
                 phone,
                 dimensions: { length, width, height },

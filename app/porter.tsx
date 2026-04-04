@@ -65,8 +65,14 @@ export default function PorterScreen() {
                         <TextInput
                             value={distance}
                             onChangeText={setDistance}
+                            onBlur={() => {
+                                const d = parseFloat(distance);
+                                if (!isNaN(d) && d < 1) {
+                                    setDistance("1");
+                                }
+                            }}
                             keyboardType="numeric"
-                            placeholder="Enter distance in km"
+                            placeholder="Min 1 km"
                             className="border rounded-xl px-4 py-3"
                         />
                     </FormCard>

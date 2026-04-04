@@ -133,10 +133,12 @@ export default function Notifications() {
                         >
                             <Pressable
                                 onPress={() => {
-                                    if (item.order_id) {
-                                        if (!item.read) {
-                                            markAsRead(item.id);
-                                        }
+                                    if (!item.read) {
+                                        markAsRead(item.id);
+                                    }
+                                    if (item.type === "support_chat" || item.type === "support") {
+                                        router.push("/chat");
+                                    } else if (item.order_id) {
                                         router.push({
                                             pathname: "/order-tracking",
                                             params: { orderId: item.order_id }

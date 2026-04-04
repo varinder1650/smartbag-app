@@ -4,17 +4,12 @@ import PricingFooter from "@/components/printout/PricingFooter";
 import PrintOptions from "@/components/printout/PrintOptions";
 import DocumentUI from "@/components/printout/DocumentUI";
 import PhotoUI from "@/components/printout/PhotoUI";
-import {
-    calculateDocumentPrice,
-    calculatePhotoPrice,
-} from "@/config/servicePricing";
 import { usePrintoutUploads } from "@/hooks/usePrintoutUploads";
 import { useServiceCartActions } from "@/hooks/useServiceCartActions";
-import { RootState } from "@/store/store";
+import api from "@/utils/client";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
-import { useSelector } from "react-redux";
 
 type PrintType = "document" | "photo";
 
@@ -36,8 +31,6 @@ export default function PrintoutScreen() {
     const [colorPrinting, setColorPrinting] = useState(editDetails?.colorPrinting || false);
     const [notes, setNotes] = useState(editDetails?.notes || "");
 
-    const printoutFee = useSelector((state: RootState) => state.price.printoutFee);
-
     const {
         documents,
         photos,
@@ -50,14 +43,38 @@ export default function PrintoutScreen() {
         deletePhoto,
     } = usePrintoutUploads(printType, editDetails?.documents, editDetails?.photos);
 
-    const price = useMemo(() => {
-        const numCopies = parseInt(copies) || 0;
-        if (numCopies <= 0) return 0;
+    const [price, setPrice] = useState(0);
+    const priceDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-        return printType === "document"
-            ? calculateDocumentPrice(numberOfPages, numCopies, colorPrinting, paperSize, printoutFee)
-            : calculatePhotoPrice(photoSize, numCopies, printoutFee);
-    }, [printType, numberOfPages, copies, colorPrinting, paperSize, photoSize, printoutFee]);
+    // Fetch price from backend (single source of truth)
+    useEffect(() => {
+        const numCopies = parseInt(copies) || 0;
+        const pages = printType === "photo" ? (photos.length || 1) : numberOfPages;
+        if (numCopies <= 0 || pages <= 0) {
+            setPrice(0);
+            return;
+        }
+
+        if (priceDebounce.current) clearTimeout(priceDebounce.current);
+        priceDebounce.current = setTimeout(async () => {
+            try {
+                const res = await api.post("/settings/estimate-printout-price", {
+                    print_type: printType,
+                    copies: numCopies,
+                    pages,
+                    color: colorPrinting,
+                    paper_size: printType === "photo" ? photoSize : paperSize,
+                });
+                setPrice(res.data.price);
+            } catch {
+                setPrice(0);
+            }
+        }, 300);
+
+        return () => {
+            if (priceDebounce.current) clearTimeout(priceDebounce.current);
+        };
+    }, [printType, numberOfPages, copies, colorPrinting, paperSize, photoSize, photos.length]);
 
     const handleAddToCart = useCallback(async () => {
         if (printType === "document" && documents.length === 0) {

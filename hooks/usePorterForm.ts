@@ -1,9 +1,9 @@
-import { calculatePorterPrice, PORTER_URGENCY_FEE } from "@/config/servicePricing";
 import { useServiceCartActions } from "@/hooks/useServiceCartActions";
 import { RootState } from "@/store/store";
 import { Address } from "@/types/address.types";
+import api from "@/utils/client";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -24,24 +24,48 @@ export function usePorterForm(editData?: any) {
 
     const selectedPickup = useSelector((state: RootState) => state.addressSelection.pickup);
     const selectedDelivery = useSelector((state: RootState) => state.addressSelection.delivery);
-    const porterFee = useSelector((state: RootState) => state.price.porterFee);
+    const [calculatedPrice, setCalculatedPrice] = useState(0);
+    const priceDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (selectedPickup) setPickupAddress(selectedPickup);
         if (selectedDelivery) setDeliveryAddress(selectedDelivery);
     }, [selectedPickup, selectedDelivery]);
 
-    const calculatedPrice = useMemo(() => {
-        if (!distance || !length || !width || !height) return 0;
-        const d = parseFloat(distance);
-        if (isNaN(d)) return 0;
-
-        let price = calculatePorterPrice(d, { length, width, height }, porterFee);
-        if (isUrgent) {
-            price = price + PORTER_URGENCY_FEE;
+    // Fetch price from backend (single source of truth)
+    useEffect(() => {
+        if (!distance || !length || !width || !height) {
+            setCalculatedPrice(0);
+            return;
         }
-        return Math.round(price);
-    }, [distance, length, width, height, isUrgent, porterFee]);
+        const d = parseFloat(distance);
+        if (isNaN(d) || d <= 0) {
+            setCalculatedPrice(0);
+            return;
+        }
+
+        if (priceDebounce.current) clearTimeout(priceDebounce.current);
+        priceDebounce.current = setTimeout(async () => {
+            try {
+                const res = await api.post("/settings/estimate-porter-price", {
+                    distance: d,
+                    length,
+                    width,
+                    height,
+                    is_urgent: isUrgent,
+                });
+                if (__DEV__) console.log("[PorterPrice] response:", res.data);
+                setCalculatedPrice(res.data.price);
+            } catch (e: any) {
+                if (__DEV__) console.error("[PorterPrice] error:", e?.response?.status, e?.response?.data || e.message);
+                setCalculatedPrice(0);
+            }
+        }, 300);
+
+        return () => {
+            if (priceDebounce.current) clearTimeout(priceDebounce.current);
+        };
+    }, [distance, length, width, height, isUrgent]);
 
     const handleAddToCart = useCallback(async () => {
         if (!pickupAddress || !deliveryAddress || !distance || !weight || !phone || !length || !width || !height) {

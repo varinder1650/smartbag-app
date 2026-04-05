@@ -99,14 +99,28 @@ export default function RequestProductScreen() {
         <SafeView className="flex-1 bg-gray-50">
             <TitleBar
                 title="Request Product"
-                subtitle="Request a product from our store"
+                subtitle=""
             />
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 120 }}
             >
+                <View className="px-4 mt-6">
+                    <View className="bg-blue-50 p-4 rounded-2xl flex-row items-start border border-blue-100">
+                        <Ionicons name="information-circle" size={24} color="#3b82f6" />
+                        <View className="flex-1 ml-3">
+                            <Text className="text-blue-900 font-semibold mb-1">
+                                Didn't find the product you want?
+                            </Text>
+                            <Text className="text-blue-800/80 text-sm leading-5 text-gray-700">
+                                Let us know the details of the product you're looking for, and we'll do our best to make it available.
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
                 {/* FORM */}
-                <View className="px-4 mt-6 space-y-6">
+                <View className="px-4 mt-8 space-y-6">
                     {/* Product Name */}
                     <FormCard title="Product Name *">
                         <TextInput

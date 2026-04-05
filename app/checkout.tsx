@@ -143,6 +143,7 @@ export default function CheckoutScreen() {
                             dimensions: details.dimensions || null,
                             weight_category: details.weight || "medium",
                             phone: details.phone || "",
+                            recipient_name: details.recipientName || "",
                             estimated_distance: parseFloat(String(details.distance || 0)),
                             notes: details.notes || "",
                             is_urgent: details.isUrgent || false,

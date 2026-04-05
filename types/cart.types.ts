@@ -18,6 +18,7 @@ export interface PorterServiceDetails {
     distance: number;
     weight: string;
     phone: string;
+    recipientName: string;
     dimensions: {
         length: string;
         width: string;

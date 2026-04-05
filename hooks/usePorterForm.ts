@@ -16,6 +16,7 @@ export function usePorterForm(editData?: any) {
     const [distance, setDistance] = useState(editData?.distance?.toString() || "");
     const [weight, setWeight] = useState(editData?.weight || "");
     const [phone, setPhone] = useState(editData?.phone || "");
+    const [recipientName, setRecipientName] = useState(editData?.recipientName || "");
     const [length, setLength] = useState<string | null>(editData?.dimensions?.length || null);
     const [width, setWidth] = useState<string | null>(editData?.dimensions?.width || null);
     const [height, setHeight] = useState<string | null>(editData?.dimensions?.height || null);
@@ -103,7 +104,7 @@ export function usePorterForm(editData?: any) {
     }, [distance, length, width, height, isUrgent]);
 
     const handleAddToCart = useCallback(async () => {
-        if (!pickupAddress || !deliveryAddress || !distance || !weight || !phone || !length || !width || !height) {
+        if (!pickupAddress || !deliveryAddress || !distance || !weight || !phone || !recipientName || !length || !width || !height) {
             Alert.alert("Error", "All fields are required");
             return;
         }
@@ -121,6 +122,7 @@ export function usePorterForm(editData?: any) {
                 distance: parsedDistance,
                 weight,
                 phone,
+                recipientName,
                 dimensions: { length, width, height },
                 notes,
                 isUrgent,
@@ -137,6 +139,7 @@ export function usePorterForm(editData?: any) {
         setDistance("");
         setWeight("");
         setPhone("");
+        setRecipientName("");
         setLength(null);
         setWidth(null);
         setHeight(null);
@@ -159,6 +162,7 @@ export function usePorterForm(editData?: any) {
         distance, setDistance,
         weight, setWeight,
         phone, setPhone,
+        recipientName, setRecipientName,
         length, setLength,
         width, setWidth,
         height, setHeight,

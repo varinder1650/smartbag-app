@@ -23,6 +23,8 @@ export const AddressCard = ({
     pincode,
     mobile_number,
     is_default,
+    latitude,
+    longitude,
     mode,
     addressType,
     onEdit,
@@ -40,6 +42,8 @@ export const AddressCard = ({
         pincode,
         mobile_number,
         is_default,
+        latitude,
+        longitude,
     };
 
     const handlePress = () => {

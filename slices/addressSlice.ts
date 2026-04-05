@@ -9,7 +9,12 @@ export const fetchAddresses = createAsyncThunk<Address[], void, { rejectValue: s
         try {
             const res = await api.get("/address/my/");
             const payload = res.data;
-            if (__DEV__) console.log("[fetchAddresses] raw:", JSON.stringify(payload).slice(0, 200));
+            if (__DEV__) {
+                console.log("[fetchAddresses] raw:", JSON.stringify(payload).slice(0, 200));
+                // Log coordinates for each address
+                const addrs = Array.isArray(payload) ? payload : (payload.data || payload.addresses || []);
+                addrs.forEach((a: any) => console.log(`[fetchAddresses] "${a.label}": lat=${a.latitude}, lng=${a.longitude}`));
+            }
             const addresses = Array.isArray(payload)
                 ? payload
                 : (payload.data || payload.addresses || []);

@@ -9,7 +9,7 @@ import { usePorterForm } from "@/hooks/usePorterForm";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
-import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 
 export default function PorterScreen() {
     const router = useRouter();
@@ -34,6 +34,9 @@ export default function PorterScreen() {
         calculatedPrice,
         handleAddToCart,
         renderAddress,
+        distanceLoading,
+        autoDistance,
+        estimatedDuration,
     } = usePorterForm(editDetails);
 
     return (
@@ -62,19 +65,47 @@ export default function PorterScreen() {
                     </FormCard>
 
                     <FormCard title="Estimated Distance (km) *">
-                        <TextInput
-                            value={distance}
-                            onChangeText={setDistance}
-                            onBlur={() => {
-                                const d = parseFloat(distance);
-                                if (!isNaN(d) && d < 1) {
-                                    setDistance("1");
-                                }
-                            }}
-                            keyboardType="numeric"
-                            placeholder="Min 1 km"
-                            className="border rounded-xl px-4 py-3"
-                        />
+                        <View className="flex-row items-center border rounded-xl px-4 py-3">
+                            {distanceLoading ? (
+                                <>
+                                    <ActivityIndicator size="small" color="#3B82F6" />
+                                    <Text className="text-gray-400 ml-2">Calculating route...</Text>
+                                </>
+                            ) : (
+                                <>
+                                    <TextInput
+                                        value={distance}
+                                        onChangeText={(v) => {
+                                            setDistance(v);
+                                        }}
+                                        onBlur={() => {
+                                            const d = parseFloat(distance);
+                                            if (!isNaN(d) && d < 1) {
+                                                setDistance("1");
+                                            }
+                                        }}
+                                        editable={!autoDistance}
+                                        keyboardType="numeric"
+                                        placeholder="Min 1 km"
+                                        className="flex-1"
+                                        style={{ color: autoDistance ? '#6B7280' : '#111827' }}
+                                    />
+                                    {autoDistance && (
+                                        <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+                                    )}
+                                </>
+                            )}
+                        </View>
+                        {autoDistance && estimatedDuration && (
+                            <Text className="text-xs text-gray-500 mt-1 ml-1">
+                                Auto-calculated via route • ~{estimatedDuration} min drive
+                            </Text>
+                        )}
+                        {!autoDistance && !distanceLoading && (
+                            <Text className="text-xs text-gray-400 mt-1 ml-1">
+                                Pin locations on addresses to auto-calculate
+                            </Text>
+                        )}
                     </FormCard>
 
                     <FormCard title="Package Dimensions (cm) *">

@@ -74,9 +74,10 @@ export default function AddressScreen() {
             {!isSelectMode && (
                 <Pressable
                     onPress={() => setModalVisible(true)}
-                    className="absolute bottom-6 right-6 bg-primary w-14 h-14 rounded-full items-center justify-center shadow-lg"
+                    className="absolute bottom-6 left-4 right-4 bg-primary flex-row py-4 rounded-xl items-center justify-center shadow-md"
                 >
-                    <Ionicons name="add" size={26} color="white" />
+                    <Ionicons name="add" size={24} color="white" />
+                    <Text className="text-white font-semibold text-lg ml-2">Add Address</Text>
                 </Pressable>
             )}
 

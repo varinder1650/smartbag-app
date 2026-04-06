@@ -16,6 +16,7 @@ export function usePorterForm(editData?: any) {
     const [distance, setDistance] = useState(editData?.distance?.toString() || "");
     const [weight, setWeight] = useState(editData?.weight || "");
     const [phone, setPhone] = useState(editData?.phone || "");
+    const [recipientName, setRecipientName] = useState(editData?.recipientName || "");
     const [length, setLength] = useState<string | null>(editData?.dimensions?.length || null);
     const [width, setWidth] = useState<string | null>(editData?.dimensions?.width || null);
     const [height, setHeight] = useState<string | null>(editData?.dimensions?.height || null);
@@ -25,12 +26,47 @@ export function usePorterForm(editData?: any) {
     const selectedPickup = useSelector((state: RootState) => state.addressSelection.pickup);
     const selectedDelivery = useSelector((state: RootState) => state.addressSelection.delivery);
     const [calculatedPrice, setCalculatedPrice] = useState(0);
+    const [distanceLoading, setDistanceLoading] = useState(false);
+    const [autoDistance, setAutoDistance] = useState(false);
+    const [estimatedDuration, setEstimatedDuration] = useState<number | null>(null);
     const priceDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (selectedPickup) setPickupAddress(selectedPickup);
         if (selectedDelivery) setDeliveryAddress(selectedDelivery);
     }, [selectedPickup, selectedDelivery]);
+
+    // Auto-calculate distance when both addresses have coordinates
+    useEffect(() => {
+        if (__DEV__) console.log("[Porter] Pickup coords:", pickupAddress?.latitude, pickupAddress?.longitude, "Delivery coords:", deliveryAddress?.latitude, deliveryAddress?.longitude);
+        if (
+            pickupAddress?.latitude && pickupAddress?.longitude &&
+            deliveryAddress?.latitude && deliveryAddress?.longitude
+        ) {
+            setDistanceLoading(true);
+            api.post("/settings/estimate-distance", {
+                origin_lat: pickupAddress.latitude,
+                origin_lng: pickupAddress.longitude,
+                dest_lat: deliveryAddress.latitude,
+                dest_lng: deliveryAddress.longitude,
+            })
+                .then((res) => {
+                    const km = res.data.distance_km;
+                    setDistance(String(km < 1 ? 1 : km));
+                    setAutoDistance(true);
+                    setEstimatedDuration(res.data.duration_min);
+                    if (__DEV__) console.log("[Porter] Auto distance:", km, "km, duration:", res.data.duration_min, "min");
+                })
+                .catch((e) => {
+                    if (__DEV__) console.error("[Porter] Distance estimation failed:", e?.response?.data || e.message);
+                    setAutoDistance(false);
+                })
+                .finally(() => setDistanceLoading(false));
+        } else {
+            setAutoDistance(false);
+            setEstimatedDuration(null);
+        }
+    }, [pickupAddress, deliveryAddress]);
 
     // Fetch price from backend (single source of truth)
     useEffect(() => {
@@ -68,7 +104,7 @@ export function usePorterForm(editData?: any) {
     }, [distance, length, width, height, isUrgent]);
 
     const handleAddToCart = useCallback(async () => {
-        if (!pickupAddress || !deliveryAddress || !distance || !weight || !phone || !length || !width || !height) {
+        if (!pickupAddress || !deliveryAddress || !distance || !weight || !phone || !recipientName || !length || !width || !height) {
             Alert.alert("Error", "All fields are required");
             return;
         }
@@ -86,6 +122,7 @@ export function usePorterForm(editData?: any) {
                 distance: parsedDistance,
                 weight,
                 phone,
+                recipientName,
                 dimensions: { length, width, height },
                 notes,
                 isUrgent,
@@ -102,6 +139,7 @@ export function usePorterForm(editData?: any) {
         setDistance("");
         setWeight("");
         setPhone("");
+        setRecipientName("");
         setLength(null);
         setWidth(null);
         setHeight(null);
@@ -124,6 +162,7 @@ export function usePorterForm(editData?: any) {
         distance, setDistance,
         weight, setWeight,
         phone, setPhone,
+        recipientName, setRecipientName,
         length, setLength,
         width, setWidth,
         height, setHeight,
@@ -132,5 +171,8 @@ export function usePorterForm(editData?: any) {
         calculatedPrice,
         handleAddToCart,
         renderAddress,
+        distanceLoading,
+        autoDistance,
+        estimatedDuration,
     };
 }

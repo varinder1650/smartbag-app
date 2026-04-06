@@ -9,7 +9,7 @@ import { usePorterForm } from "@/hooks/usePorterForm";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
-import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 
 export default function PorterScreen() {
     const router = useRouter();
@@ -26,6 +26,7 @@ export default function PorterScreen() {
         distance, setDistance,
         weight, setWeight,
         phone, setPhone,
+        recipientName, setRecipientName,
         length, setLength,
         width, setWidth,
         height, setHeight,
@@ -34,6 +35,9 @@ export default function PorterScreen() {
         calculatedPrice,
         handleAddToCart,
         renderAddress,
+        distanceLoading,
+        autoDistance,
+        estimatedDuration,
     } = usePorterForm(editDetails);
 
     return (
@@ -62,19 +66,47 @@ export default function PorterScreen() {
                     </FormCard>
 
                     <FormCard title="Estimated Distance (km) *">
-                        <TextInput
-                            value={distance}
-                            onChangeText={setDistance}
-                            onBlur={() => {
-                                const d = parseFloat(distance);
-                                if (!isNaN(d) && d < 1) {
-                                    setDistance("1");
-                                }
-                            }}
-                            keyboardType="numeric"
-                            placeholder="Min 1 km"
-                            className="border rounded-xl px-4 py-3"
-                        />
+                        <View className="flex-row items-center border rounded-xl px-4 py-3">
+                            {distanceLoading ? (
+                                <>
+                                    <ActivityIndicator size="small" color="#3B82F6" />
+                                    <Text className="text-gray-400 ml-2">Calculating route...</Text>
+                                </>
+                            ) : (
+                                <>
+                                    <TextInput
+                                        value={distance}
+                                        onChangeText={(v) => {
+                                            setDistance(v);
+                                        }}
+                                        onBlur={() => {
+                                            const d = parseFloat(distance);
+                                            if (!isNaN(d) && d < 1) {
+                                                setDistance("1");
+                                            }
+                                        }}
+                                        editable={!autoDistance}
+                                        keyboardType="numeric"
+                                        placeholder="Min 1 km"
+                                        className="flex-1"
+                                        style={{ color: autoDistance ? '#6B7280' : '#111827' }}
+                                    />
+                                    {autoDistance && (
+                                        <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+                                    )}
+                                </>
+                            )}
+                        </View>
+                        {autoDistance && estimatedDuration && (
+                            <Text className="text-xs text-gray-500 mt-1 ml-1">
+                                Auto-calculated via route • ~{estimatedDuration} min drive
+                            </Text>
+                        )}
+                        {!autoDistance && !distanceLoading && (
+                            <Text className="text-xs text-gray-400 mt-1 ml-1">
+                                Pin locations on addresses to auto-calculate
+                            </Text>
+                        )}
                     </FormCard>
 
                     <FormCard title="Package Dimensions (cm) *">
@@ -87,12 +119,22 @@ export default function PorterScreen() {
                         <WeightSelector selected={weight} onSelect={setWeight} label="" />
                     </FormCard>
 
-                    <FormCard title="Phone Number *">
+                    <FormCard title="Recipient Name *">
+                        <TextInput
+                            value={recipientName}
+                            onChangeText={setRecipientName}
+                            placeholder="Enter recipient's full name"
+                            className="border rounded-xl px-4 py-3"
+                        />
+                    </FormCard>
+
+                    <FormCard title="Recipient Phone Number *">
                         <TextInput
                             value={phone}
                             onChangeText={setPhone}
                             keyboardType="phone-pad"
-                            placeholder="Enter contact number"
+                            placeholder="Enter recipient's contact number"
+                            maxLength={10}
                             className="border rounded-xl px-4 py-3"
                         />
                     </FormCard>
@@ -128,6 +170,17 @@ export default function PorterScreen() {
                             textAlignVertical="top"
                         />
                     </FormCard>
+
+                    {/* Disclaimer */}
+                    <View className="bg-red-50 border border-red-200 rounded-xl p-4 mx-1">
+                        <View className="flex-row items-center mb-2">
+                            <Ionicons name="warning" size={18} color="#DC2626" />
+                            <Text className="text-sm font-semibold text-red-800 ml-2">Important Notice</Text>
+                        </View>
+                        <Text className="text-xs text-red-700 leading-5">
+                            Do not include any illegal, prohibited, or hazardous items in the parcel. SmartBag reserves the right to refuse delivery and report any suspicious packages to the authorities. By using this service, you agree that all contents are lawful.
+                        </Text>
+                    </View>
 
                     <PorterPricingCard price={calculatedPrice} isUrgent={isUrgent} />
                 </View>

@@ -1,6 +1,8 @@
+import AddressModal from "@/components/AddressModel";
 import { Address } from "@/types/address.types";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 export default function AddressSection({
@@ -8,20 +10,37 @@ export default function AddressSection({
 }: {
     defaultAddress: Address | null;
 }) {
+    const [showAddModal, setShowAddModal] = useState(false);
+
     return (
         <View className="p-2 mt-4">
             <View className="flex-row justify-between items-center mb-3">
                 <Text className="font-bold text-lg">Delivery Address</Text>
 
-                <Pressable
-                    onPress={() => router.push("/address?mode=select&addressType=checkout")}
-                    className="px-4 py-1.5 bg-primary/10 rounded-full"
-                >
-                    <Text className="text-primary text-sm font-semibold">
-                        {defaultAddress ? "Change" : "Add"}
-                    </Text>
-                </Pressable>
+                <View className="flex-row gap-2">
+                    <Pressable
+                        onPress={() => setShowAddModal(true)}
+                        className="px-3 py-1.5 bg-green-50 rounded-full flex-row items-center"
+                    >
+                        <Ionicons name="add-circle-outline" size={14} color="#16A34A" />
+                        <Text className="text-green-700 text-sm font-semibold ml-1">New</Text>
+                    </Pressable>
+
+                    <Pressable
+                        onPress={() => router.push("/address?mode=select&addressType=checkout")}
+                        className="px-3 py-1.5 bg-primary/10 rounded-full"
+                    >
+                        <Text className="text-primary text-sm font-semibold">
+                            {defaultAddress ? "Change" : "Select"}
+                        </Text>
+                    </Pressable>
+                </View>
             </View>
+
+            <AddressModal
+                visible={showAddModal}
+                onClose={() => setShowAddModal(false)}
+            />
 
             {defaultAddress ? (
                 <View className="gap-1">

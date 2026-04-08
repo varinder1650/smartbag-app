@@ -21,6 +21,9 @@ export type AssignedOrder = {
     porter?: {
         pickup: string;
         drop: string;
+        recipient_name?: string;
+        phone?: string;
+        distance?: number;
     };
 };
 
@@ -93,6 +96,21 @@ export default function AssignedOrderCard({ order, onActionComplete }: Props) {
 
                 {order.porter && (
                     <View className="mt-1">
+                        {order.porter.recipient_name && (
+                            <Text className="text-sm">
+                                Recipient: <Text className="font-medium">{order.porter.recipient_name}</Text>
+                            </Text>
+                        )}
+                        {order.porter.phone && (
+                            <Text className="text-sm">
+                                Recipient Phone: <Text className="font-medium">{order.porter.phone}</Text>
+                            </Text>
+                        )}
+                        {order.porter.distance != null && (
+                            <Text className="text-sm">
+                                Distance: <Text className="font-medium">{order.porter.distance} km</Text>
+                            </Text>
+                        )}
                         <Text className="text-sm">
                             Pickup: {order.porter.pickup}
                         </Text>

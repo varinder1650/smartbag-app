@@ -18,6 +18,9 @@ type OrderDetails = {
     porter?: {
         pickup: string;
         drop: string;
+        recipient_name?: string;
+        phone?: string;
+        distance?: number;
     };
     items: {
         type: string;
@@ -112,6 +115,15 @@ export default function OrderDetailsModal({ orderId, visible, onClose }: Props) 
                                 {order.porter && (
                                     <View className="border-t pt-3">
                                         <Text className="font-semibold">Porter Details</Text>
+                                        {order.porter.recipient_name && (
+                                            <Text>Recipient: {order.porter.recipient_name}</Text>
+                                        )}
+                                        {order.porter.phone && (
+                                            <Text>Recipient Phone: {order.porter.phone}</Text>
+                                        )}
+                                        {order.porter.distance != null && (
+                                            <Text>Distance: {order.porter.distance} km</Text>
+                                        )}
                                         <Text>Pickup: {order.porter.pickup}</Text>
                                         <Text>Drop: {order.porter.drop}</Text>
                                     </View>

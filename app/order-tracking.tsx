@@ -334,7 +334,7 @@ export default function OrderTrackingScreen() {
                                 <View className="flex-row items-center mt-1">
                                     <Ionicons name="star" size={14} color="#FACC15" />
                                     <Text className="text-gray-600 text-sm ml-1">
-                                        {order.delivery_partner.rating.toFixed(1)} • {order.delivery_partner.deliveries} deliveries
+                                        {(order.delivery_partner.rating ?? 0).toFixed(1)} • {order.delivery_partner.deliveries ?? 0} deliveries
                                     </Text>
                                 </View>
                             </View>

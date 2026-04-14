@@ -26,7 +26,7 @@ type ChatMessage = {
 
 const WS_BASE = __DEV__
     ? process.env.EXPO_PUBLIC_WS_URL_DEV || "ws://10.0.2.2:8000/api"
-    : process.env.EXPO_PUBLIC_WS_URL || "ws://195.35.6.222/api";
+    : process.env.EXPO_PUBLIC_WS_URL || "wss://api.indiabuilds.co.in";
 
 export default function ChatScreen() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);

@@ -11,7 +11,7 @@ import {
 const api = axios.create({
     baseURL: __DEV__
         ? process.env.EXPO_PUBLIC_API_URL_DEV || 'http://10.0.2.2:8000/api'
-        : process.env.EXPO_PUBLIC_API_URL || 'http://195.35.6.222/api',
+        : process.env.EXPO_PUBLIC_API_URL || 'https://api.indiabuilds.co.in',
     timeout: 15000,
     headers: {
         "Content-Type": "application/json",

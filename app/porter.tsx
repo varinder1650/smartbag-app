@@ -8,8 +8,8 @@ import TitleBar from "@/components/TitleBar";
 import { usePorterForm } from "@/hooks/usePorterForm";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import { ActivityIndicator, Modal, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 
 export default function PorterScreen() {
     const router = useRouter();
@@ -39,6 +39,30 @@ export default function PorterScreen() {
         autoDistance,
         estimatedDuration,
     } = usePorterForm(editDetails);
+
+    const [showRestrictedModal, setShowRestrictedModal] = useState(false);
+
+    const onSubmitPress = useCallback(() => {
+        setShowRestrictedModal(true);
+    }, []);
+
+    const handleConfirm = useCallback(() => {
+        setShowRestrictedModal(false);
+        handleAddToCart();
+    }, [handleAddToCart]);
+
+    const restrictedItems = [
+        ["Pornographic Materials", "Dry Ice"],
+        ["Human Body Parts", "Explosives"],
+        ["Fire Arms", "Flammables"],
+        ["Livestock", "Pets & Animals"],
+        ["Dangerous Goods", "Hazardous Goods"],
+        ["Illegal Goods", "Radioactive Materials"],
+        ["Precious Jewelleries", "Currencies & Coins"],
+        ["Stones and Gems", "Gambling Devices"],
+        ["Lottery Tickets", "Fire Extinguishers"],
+        ["Cigarettes & Alcohols", "Narcotics and Illegal Drugs"],
+    ];
 
     return (
         <SafeView className="flex-1 bg-white">
@@ -171,22 +195,47 @@ export default function PorterScreen() {
                         />
                     </FormCard>
 
-                    {/* Disclaimer */}
-                    <View className="bg-red-50 border border-red-200 rounded-xl p-4 mx-1">
-                        <View className="flex-row items-center mb-2">
-                            <Ionicons name="warning" size={18} color="#DC2626" />
-                            <Text className="text-sm font-semibold text-red-800 ml-2">Important Notice</Text>
-                        </View>
-                        <Text className="text-xs text-red-700 leading-5">
-                            Do not include any illegal, prohibited, or hazardous items in the parcel. SmartBag reserves the right to refuse delivery and report any suspicious packages to the authorities. By using this service, you agree that all contents are lawful.
-                        </Text>
-                    </View>
-
                     <PorterPricingCard price={calculatedPrice} isUrgent={isUrgent} />
                 </View>
             </ScrollView>
 
-            <PorterFooter price={calculatedPrice} isUrgent={isUrgent} onAddToCart={handleAddToCart} isEditMode={!!editDetails} />
+            <PorterFooter price={calculatedPrice} isUrgent={isUrgent} onAddToCart={onSubmitPress} isEditMode={!!editDetails} />
+
+            <Modal visible={showRestrictedModal} animationType="slide" transparent>
+                <View className="flex-1 justify-end bg-black/50">
+                    <View className="bg-white rounded-t-3xl px-5 pt-5 pb-8" style={{ maxHeight: '80%' }}>
+                        <View className="flex-row items-center justify-between mb-4">
+                            <Text className="text-xl font-bold">Restricted Items</Text>
+                            <Pressable onPress={() => setShowRestrictedModal(false)}>
+                                <Ionicons name="close" size={24} color="#111" />
+                            </Pressable>
+                        </View>
+
+                        <View className="bg-orange-100 rounded-2xl p-4 flex-row items-center mb-5">
+                            <Text className="text-base font-semibold flex-1 leading-6">
+                                Your order should not contain any of these restricted items
+                            </Text>
+                            <Ionicons name="ban" size={40} color="#EF4444" style={{ marginLeft: 12 }} />
+                        </View>
+
+                        <ScrollView className="mb-4">
+                            {restrictedItems.map((row, i) => (
+                                <View key={i} className="flex-row mb-2">
+                                    <Text className="flex-1 text-sm text-gray-800">• {row[0]}</Text>
+                                    <Text className="flex-1 text-sm text-gray-800">• {row[1]}</Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+
+                        <Pressable
+                            onPress={handleConfirm}
+                            className="bg-primary py-4 rounded-xl items-center"
+                        >
+                            <Text className="text-white font-bold text-base">Okay, Understood</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
         </SafeView>
     );
 }

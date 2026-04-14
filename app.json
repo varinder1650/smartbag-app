@@ -17,6 +17,7 @@
     },
     "android": {
       "package": "com.smartbag.app",
+      "usesCleartextTraffic": true,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",

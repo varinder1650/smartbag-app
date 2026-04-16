@@ -5,8 +5,8 @@ import TitleBar from "@/components/TitleBar";
 import { RootState } from "@/store/store";
 import { Address } from "@/types/address.types";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -21,17 +21,6 @@ export default function AddressScreen() {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-    const mapPickerResult = useSelector((state: RootState) => state.mapPicker.result);
-
-    // Auto-open modal when returning from map picker with results
-    useFocusEffect(
-        useCallback(() => {
-            if (mapPickerResult) {
-                setEditingAddress(null);
-                setModalVisible(true);
-            }
-        }, [mapPickerResult])
-    );
 
     return (
         <SafeView className="flex-1 bg-gray-50">

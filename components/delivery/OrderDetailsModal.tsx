@@ -26,6 +26,7 @@ type OrderDetails = {
         type: string;
         name?: string;
         quantity?: number;
+        warehouse_name?: string;
     }[];
 };
 
@@ -139,7 +140,12 @@ export default function OrderDetailsModal({ orderId, visible, onClose }: Props) 
                                             >
                                                 <Text className="font-semibold text-gray-700 mb-1">Items: {item.type}</Text>
                                                 {item.type === "product" && (
-                                                    <Text className="text-gray-900">{item.name} x {item.quantity}</Text>
+                                                    <>
+                                                        <Text className="text-gray-900">{item.name} x {item.quantity}</Text>
+                                                        {item.warehouse_name && (
+                                                            <Text className="text-xs text-gray-500 mt-1">Warehouse: {item.warehouse_name}</Text>
+                                                        )}
+                                                    </>
                                                 )}
                                             </View>
                                         ))}

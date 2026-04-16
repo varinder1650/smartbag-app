@@ -68,13 +68,13 @@ function RootLayoutWithProviders() {
     };
   }, [dispatch]);
 
-  // Sync cart when authenticated
+  // Sync cart and addresses when authenticated and profile is complete
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !requirePhone) {
       dispatch(syncUserCart());
       dispatch(fetchAddresses());
     }
-  }, [isAuthenticated, dispatch]);
+  }, [isAuthenticated, requirePhone, dispatch]);
 
   // Fetch prices
   useEffect(() => {

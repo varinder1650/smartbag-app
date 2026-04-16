@@ -8,20 +8,20 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://195.35.6.222/api",
-        "EXPO_PUBLIC_API_URL_DEV": "http://195.35.6.222/api"
+        "EXPO_PUBLIC_API_URL": "https://api.indiabuilds.co.in",
+        "EXPO_PUBLIC_API_URL_DEV": "https://api.indiabuilds.co.in"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://195.35.6.222/api"
+        "EXPO_PUBLIC_API_URL": "https://api.indiabuilds.co.in"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://195.35.6.222/api"
+        "EXPO_PUBLIC_API_URL": "https://api.indiabuilds.co.in"
       }
     }
   },

@@ -34,8 +34,8 @@ export default function RequirePhoneScreen() {
     };
 
     return (
-        <SafeView className="flex-1 bg-white px-6">
-            <View className="flex-1 justify-center">
+        <SafeView className="flex-1 bg-white">
+            <View className="flex-1 justify-center px-8">
                 <Text className="text-3xl font-extrabold text-gray-900 mb-2">
                     Add Phone Number
                 </Text>
@@ -45,9 +45,10 @@ export default function RequirePhoneScreen() {
 
                 <TextInput
                     placeholder="Phone Number"
-                    keyboardType="phone-pad"
+                    keyboardType="number-pad"
                     value={phone}
-                    onChangeText={setPhone}
+                    onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, '').slice(0, 10))}
+                    maxLength={10}
                     className="border border-gray-300 rounded-xl px-4 py-3 mb-6"
                 />
 

@@ -156,7 +156,7 @@ export const syncClearCart = createAsyncThunk<void, void, { rejectValue: string 
 export const syncUserCart = createAsyncThunk<CartItem[]>(
     "cart/syncUserCart",
     async () => {
-        const { data } = await api.get<BackendCartResponse>("/cart");
+        const { data } = await api.get<BackendCartResponse>("/cart/");
 
         const backendItems = data.items || [];
 

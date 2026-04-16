@@ -7,7 +7,7 @@ export const fetchAddresses = createAsyncThunk<Address[], void, { rejectValue: s
     "address/fetch",
     async (_, { rejectWithValue }) => {
         try {
-            const res = await api.get("/address/my/");
+            const res = await api.get("/address/my");
             const payload = res.data;
             if (__DEV__) {
                 console.log("[fetchAddresses] raw:", JSON.stringify(payload).slice(0, 200));
@@ -20,6 +20,9 @@ export const fetchAddresses = createAsyncThunk<Address[], void, { rejectValue: s
                 : (payload.data || payload.addresses || []);
             return addresses;
         } catch (error: any) {
+            if (error?.response?.status === 404) {
+                return [];
+            }
             const message = error?.response?.data?.detail || error?.response?.data?.message || error.message || "Failed to fetch addresses";
             if (__DEV__) console.error("[fetchAddresses] error:", error?.response?.status, error?.response?.data || error.message);
             return rejectWithValue(message);

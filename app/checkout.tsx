@@ -11,12 +11,10 @@ import { clearCheckoutAddress } from "@/slices/checkoutAddressSlice";
 import { RootState } from "@/store/store";
 import { selectDefaultAddress } from "@/utils/addressSelector";
 import api from "@/utils/client";
-import { showError } from "@/utils/errorHandler";
-import { logger } from "@/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Animated, Pressable, ScrollView, Text, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Alert, Animated, Pressable, ScrollView, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 interface CreateDraftOrderResponse {
@@ -40,8 +38,6 @@ export default function CheckoutScreen() {
     const defaultAddress = useSelector(selectDefaultAddress);
     const checkoutSelectedAddress = useSelector((state: RootState) => state.checkoutAddress.selectedAddress);
     const deliveryAddress = checkoutSelectedAddress ?? defaultAddress;
-    const deliveryFeeConfig = useSelector((state: RootState) => state.price.deliveryFee);
-    const appFeeConfig = useSelector((state: RootState) => state.price.appFee);
 
     const [tip, setTip] = useState(0);
     const [promo, setPromo] = useState("");
@@ -49,71 +45,18 @@ export default function CheckoutScreen() {
     const [discount, setDiscount] = useState(0);
     const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
     const [isProcessing, setIsProcessing] = useState(false);
+    const [estimateLoading, setEstimateLoading] = useState(true);
 
-    const [backendSubtotal, setBackendSubtotal] = useState<number | null>(null);
-    const [backendDeliveryFee, setBackendDeliveryFee] = useState<number | null>(null);
-    const [backendAppFee, setBackendAppFee] = useState<number | null>(null);
-    const [backendDiscount, setBackendDiscount] = useState<number | null>(null);
-    const [backendTotal, setBackendTotal] = useState<number | null>(null);
+    const [backendSubtotal, setBackendSubtotal] = useState(0);
+    const [backendDeliveryFee, setBackendDeliveryFee] = useState(0);
+    const [backendAppFee, setBackendAppFee] = useState(0);
+    const [backendDiscount, setBackendDiscount] = useState(0);
+    const [backendTotal, setBackendTotal] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false);
     const scaleAnim = useRef(new Animated.Value(0)).current;
+    const estimateDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const deliveryFeeAmount = useMemo(() => {
-        if (!deliveryFeeConfig) return 0;
-        if (subtotal >= deliveryFeeConfig.free_delivery_threshold) return 0;
-        return Math.max(deliveryFeeConfig.base_fee, deliveryFeeConfig.min_fee);
-    }, [subtotal, deliveryFeeConfig]);
-
-    const appFeeAmount = useMemo(() => {
-        if (!appFeeConfig || subtotal <= 0) return 0;
-        if (appFeeConfig.type === "percentage") {
-            return Math.round(subtotal * appFeeConfig.value / 100 * 100) / 100;
-        }
-        return appFeeConfig.value;
-    }, [subtotal, appFeeConfig]);
-
-    const displaySubtotal = backendSubtotal ?? subtotal;
-    const displayDeliveryFee = backendDeliveryFee ?? deliveryFeeAmount;
-    const displayAppFee = backendAppFee ?? appFeeAmount;
-    const displayDiscount = backendDiscount ?? discount;
-
-    const displayTotal = useMemo(() => {
-        if (backendTotal !== null) return backendTotal;
-        return subtotal + deliveryFeeAmount + appFeeAmount + tip - discount;
-    }, [backendTotal, subtotal, deliveryFeeAmount, appFeeAmount, tip, discount]);
-
-    const validateOrder = (): string | null => {
-        if (!deliveryAddress) {
-            return "Please select a delivery address";
-        }
-
-        if (cartItems.length === 0) {
-            return "Your cart is empty";
-        }
-
-        if (subtotal <= 0) {
-            return "Invalid cart amount";
-        }
-
-        if (displayTotal <= 0 || displayTotal > 100000) {
-            return "Invalid order amount";
-        }
-
-        const invalidItems = cartItems.filter(item =>
-            !item.id ||
-            !item.selling_price ||
-            item.selling_price < 0 ||
-            item.quantity <= 0
-        );
-
-        if (invalidItems.length > 0) {
-            return "Some items in your cart are invalid";
-        }
-
-        return null;
-    };
-
-    const buildOrderItems = () => {
+    const buildOrderItems = useCallback(() => {
         const items = cartItems.map(item => {
             try {
                 if (item.serviceType === "product") {
@@ -233,8 +176,77 @@ export default function CheckoutScreen() {
         }
 
         return validItems;
-    };
+    }, [cartItems]);
 
+    const fetchEstimate = useCallback(async () => {
+        if (cartItems.length === 0) return;
+        try {
+            setEstimateLoading(true);
+            const items = buildOrderItems();
+            const res = await api.post("/orders/estimate", {
+                items,
+                delivery_address: deliveryAddress,
+                tip_amount: tip,
+                promo_code: appliedPromo?.code || null,
+            });
+            const d = res.data;
+            setBackendSubtotal(d.subtotal);
+            setBackendDeliveryFee(d.delivery_fee);
+            setBackendAppFee(d.app_fee);
+            setBackendDiscount(d.discount);
+            setBackendTotal(d.total_amount);
+        } catch (e: any) {
+            if (__DEV__) console.error("Estimate error:", e?.response?.data || e.message);
+        } finally {
+            setEstimateLoading(false);
+        }
+    }, [buildOrderItems, deliveryAddress, tip, appliedPromo]);
+
+    // Fetch estimate on mount and when tip/promo changes
+    useEffect(() => {
+        if (estimateDebounce.current) clearTimeout(estimateDebounce.current);
+        estimateDebounce.current = setTimeout(fetchEstimate, 300);
+        return () => {
+            if (estimateDebounce.current) clearTimeout(estimateDebounce.current);
+        };
+    }, [fetchEstimate]);
+
+    const displaySubtotal = backendSubtotal;
+    const displayDeliveryFee = backendDeliveryFee;
+    const displayAppFee = backendAppFee;
+    const displayDiscount = backendDiscount;
+    const displayTotal = Math.round(backendTotal * 100) / 100;
+
+    const validateOrder = (): string | null => {
+        if (!deliveryAddress) {
+            return "Please select a delivery address";
+        }
+
+        if (cartItems.length === 0) {
+            return "Your cart is empty";
+        }
+
+        if (backendTotal <= 0 && !cartItems.some(item => item.serviceType === 'porter' || item.serviceType === 'printout')) {
+            return "Invalid cart amount";
+        }
+
+        if (displayTotal <= 0 || displayTotal > 100000) {
+            return "Invalid order amount";
+        }
+
+        const invalidItems = cartItems.filter(item => {
+            if (item.serviceType === 'porter' || item.serviceType === 'printout') {
+                return !item.id || !item.selling_price || item.selling_price < 0;
+            }
+            return !item.id || !item.selling_price || item.selling_price < 0 || item.quantity <= 0;
+        });
+
+        if (invalidItems.length > 0) {
+            return "Some items in your cart are invalid";
+        }
+
+        return null;
+    };
 
     // Handle success navigation safely
     useEffect(() => {
@@ -339,6 +351,7 @@ export default function CheckoutScreen() {
                 discount: serverDiscount
             } = draftResponse.data;
 
+            // Use backend values as source of truth
             setBackendSubtotal(serverSubtotal);
             setBackendDeliveryFee(delivery_fee);
             setBackendAppFee(app_fee);
@@ -346,49 +359,7 @@ export default function CheckoutScreen() {
             setBackendTotal(total_amount);
             if (tip_amount !== undefined) setTip(tip_amount);
 
-            const clientTotal = subtotal + deliveryFeeAmount + appFeeAmount + tip - discount;
-            if (Math.abs(total_amount - clientTotal) > 0.01) {
-                logger.warn('Price mismatch detected', {
-                    clientTotal,
-                    serverTotal: total_amount,
-                });
-
-                setIsProcessing(false);
-
-                Alert.alert(
-                    'Price Updated',
-                    `The order total has been updated from ₹${clientTotal.toFixed(2)} to ₹${total_amount.toFixed(2)}. Please review and confirm.`,
-                    [
-                        {
-                            text: 'Cancel',
-                            style: 'cancel',
-                            onPress: () => {
-                                setBackendSubtotal(null);
-                                setBackendDeliveryFee(null);
-                                setBackendAppFee(null);
-                                setBackendDiscount(null);
-                                setBackendTotal(null);
-                            }
-                        },
-                        {
-                            text: 'Confirm',
-                            onPress: async () => {
-                                setIsProcessing(true);
-                                try {
-                                    await confirmOrder(draft_order_id, signature, paymentMethod);
-                                } catch (error) {
-                                    showError(error);
-                                } finally {
-                                    setIsProcessing(false);
-                                }
-                            }
-                        },
-                    ]
-                );
-                return;
-            }
-
-            // No mismatch - proceed
+            // Proceed with backend-verified total
             if (paymentMethod === "online") {
                 Alert.alert(
                     "Payment Gateway",
@@ -410,11 +381,11 @@ export default function CheckoutScreen() {
 
             Alert.alert("Order Error", errorMessage);
 
-            setBackendSubtotal(null);
-            setBackendDeliveryFee(null);
-            setBackendAppFee(null);
-            setBackendDiscount(null);
-            setBackendTotal(null);
+            setBackendSubtotal(0);
+            setBackendDeliveryFee(0);
+            setBackendAppFee(0);
+            setBackendDiscount(0);
+            setBackendTotal(0);
         } finally {
             setIsProcessing(false);
         }
@@ -458,25 +429,32 @@ export default function CheckoutScreen() {
                     ))}
                 </View>
 
-                <OrderSummary
-                    subtotal={displaySubtotal}
-                    deliveryFeeAmount={displayDeliveryFee}
-                    appFeeAmount={displayAppFee}
-                    tip={tip}
-                    discount={displayDiscount}
-                    total={displayTotal}
-                />
+                {estimateLoading ? (
+                    <View className="p-4 mt-4 items-center">
+                        <ActivityIndicator size="small" color="#3B82F6" />
+                        <Text className="text-gray-400 mt-2 text-sm">Calculating pricing...</Text>
+                    </View>
+                ) : (
+                    <OrderSummary
+                        subtotal={displaySubtotal}
+                        deliveryFeeAmount={displayDeliveryFee}
+                        appFeeAmount={displayAppFee}
+                        tip={tip}
+                        discount={displayDiscount}
+                        total={displayTotal}
+                    />
+                )}
             </ScrollView>
 
             <View className="absolute bottom-0 left-0 right-0 bg-white p-4 border-t">
                 <Pressable
                     onPress={handlePlaceOrder}
-                    disabled={isProcessing}
-                    className={`py-4 rounded-full items-center ${isProcessing ? "bg-gray-400" : "bg-primary"
+                    disabled={isProcessing || estimateLoading}
+                    className={`py-4 rounded-full items-center ${isProcessing || estimateLoading ? "bg-gray-400" : "bg-primary"
                         }`}
                 >
                     <Text className="text-white font-bold text-lg">
-                        {isProcessing ? "Processing..." : `Place Order • ₹${displayTotal.toFixed(2)}`}
+                        {isProcessing ? "Processing..." : estimateLoading ? "Calculating..." : `Place Order • ₹${displayTotal.toFixed(2)}`}
                     </Text>
                 </Pressable>
             </View>

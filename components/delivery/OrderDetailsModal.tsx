@@ -18,11 +18,15 @@ type OrderDetails = {
     porter?: {
         pickup: string;
         drop: string;
+        recipient_name?: string;
+        phone?: string;
+        distance?: number;
     };
     items: {
         type: string;
         name?: string;
         quantity?: number;
+        warehouse_name?: string;
     }[];
 };
 
@@ -112,6 +116,15 @@ export default function OrderDetailsModal({ orderId, visible, onClose }: Props) 
                                 {order.porter && (
                                     <View className="border-t pt-3">
                                         <Text className="font-semibold">Porter Details</Text>
+                                        {order.porter.recipient_name && (
+                                            <Text>Recipient: {order.porter.recipient_name}</Text>
+                                        )}
+                                        {order.porter.phone && (
+                                            <Text>Recipient Phone: {order.porter.phone}</Text>
+                                        )}
+                                        {order.porter.distance != null && (
+                                            <Text>Distance: {order.porter.distance} km</Text>
+                                        )}
                                         <Text>Pickup: {order.porter.pickup}</Text>
                                         <Text>Drop: {order.porter.drop}</Text>
                                     </View>
@@ -127,7 +140,12 @@ export default function OrderDetailsModal({ orderId, visible, onClose }: Props) 
                                             >
                                                 <Text className="font-semibold text-gray-700 mb-1">Items: {item.type}</Text>
                                                 {item.type === "product" && (
-                                                    <Text className="text-gray-900">{item.name} x {item.quantity}</Text>
+                                                    <>
+                                                        <Text className="text-gray-900">{item.name} x {item.quantity}</Text>
+                                                        {item.warehouse_name && (
+                                                            <Text className="text-xs text-gray-500 mt-1">Warehouse: {item.warehouse_name}</Text>
+                                                        )}
+                                                    </>
                                                 )}
                                             </View>
                                         ))}

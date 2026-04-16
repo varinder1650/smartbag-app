@@ -25,8 +25,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             if (res.data) {
                 setUnreadCount(res.data.count || res.data.unread_count || 0);
             }
-        } catch (error) {
-            if (__DEV__) console.error("Failed to fetch unread count:", error);
+        } catch (error: any) {
+            // 404 means the endpoint isn't available yet — keep count at 0
+            if (error?.response?.status !== 404) {
+                if (__DEV__) console.error("Failed to fetch unread count:", error);
+            }
         }
     };
 

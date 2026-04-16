@@ -4,6 +4,7 @@ import { AddressEdit } from "@/types/address.types";
 import api from "@/utils/client";
 import { debouncedReverseGeocode, GeocodedAddress } from "@/utils/geocoding";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -19,7 +20,7 @@ import {
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { WebView } from "react-native-webview";
+import { WebView, WebViewMessageEvent } from "react-native-webview";
 
 const OLA_MAPS_API_KEY = process.env.EXPO_PUBLIC_OLA_MAPS_API_KEY;
 const DEFAULT_CENTER = { lat: 28.6139, lng: 77.209 };
@@ -30,6 +31,12 @@ interface SearchPrediction {
     structured_formatting?: {
         main_text: string;
         secondary_text: string;
+    };
+    geometry?: {
+        location?: {
+            lat: number;
+            lng: number;
+        };
     };
 }
 
@@ -74,8 +81,12 @@ const map = new maplibregl.Map({
         return { url };
     }
 });
-window.flyToLocation = (lat, lng) => {
-    map.flyTo({ center: [lng, lat], zoom: 15, duration: 600 });
+map.on("moveend", () => {
+    const c = map.getCenter();
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: "regionChange", lat: c.lat, lng: c.lng }));
+});
+window.flyToLocation = (lat, lng, zoom) => {
+    map.flyTo({ center: [lng, lat], zoom: zoom || 17, duration: 800 });
 };
 </script>
 </body>
@@ -121,6 +132,7 @@ export default function AddressModal({
     const [geocodedAddress, setGeocodedAddress] = useState<GeocodedAddress | null>(null);
     const [isGeocoding, setIsGeocoding] = useState(false);
     const [locationLoading, setLocationLoading] = useState(false);
+    const [mapScrollLock, setMapScrollLock] = useState(false);
 
     // Search state
     const [searchQuery, setSearchQuery] = useState("");
@@ -136,9 +148,6 @@ export default function AddressModal({
     useEffect(() => {
         if (initialData) {
             setForm(initialData);
-            if (initialData.pincode) {
-                validatePincode(initialData.pincode);
-            }
         } else {
             setForm({
                 label: "",
@@ -182,14 +191,14 @@ export default function AddressModal({
     useEffect(() => {
         if (mapReady && pendingFlyTo.current) {
             const { lat, lng } = pendingFlyTo.current;
-            webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}); true;`);
+            webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}, 17); true;`);
             pendingFlyTo.current = null;
         }
     }, [mapReady]);
 
-    const flyToAndGeocode = (lat: number, lng: number) => {
+    const flyToAndGeocode = (lat: number, lng: number, zoom?: number) => {
         if (mapReady) {
-            webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}); true;`);
+            webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}, ${zoom || 17}); true;`);
         } else {
             pendingFlyTo.current = { lat, lng };
         }
@@ -201,18 +210,23 @@ export default function AddressModal({
         debouncedReverseGeocode(lat, lng, (result) => {
             setGeocodedAddress(result);
             if (result) {
-                setForm(prev => ({
-                    ...prev,
-                    latitude: lat,
-                    longitude: lng,
-                    street: result.street || prev.street,
-                    city: result.city || prev.city,
-                    state: result.state || prev.state,
-                    pincode: result.pincode || prev.pincode,
-                }));
-                if (result.pincode && result.pincode.length === 6) {
-                    validatePincode(result.pincode);
-                }
+                setForm(prev => {
+                    const newPincode = result.pincode || prev.pincode;
+                    if (newPincode !== prev.pincode) {
+                        // Pincode changed — clear stale validation so UI resets
+                        setPincodeValidation({ isValid: false, isActive: false, city: "", state: "", isLoading: false, error: null });
+                    }
+                    return {
+                        ...prev,
+                        latitude: lat,
+                        longitude: lng,
+                        street: result.street || prev.street,
+                        city: result.city || prev.city,
+                        state: result.state || prev.state,
+                        pincode: newPincode,
+                    };
+                });
+                // pincode validation happens on save, not here
             }
             setIsGeocoding(false);
         });
@@ -286,34 +300,44 @@ export default function AddressModal({
     const handleSelectSearchResult = async (prediction: SearchPrediction) => {
         setSearchQuery(prediction.structured_formatting?.main_text || prediction.description);
         setSearchResults([]);
-        if (!OLA_MAPS_API_KEY) return;
+
+        if (__DEV__) console.log("[Search] selected:", prediction.description, "geometry:", JSON.stringify(prediction.geometry));
+
+        // OLA Maps autocomplete predictions usually include geometry — use it directly
+        const predLoc = prediction.geometry?.location;
+        if (predLoc && predLoc.lat != null && predLoc.lng != null) {
+            if (__DEV__) console.log("[Search] flying to:", predLoc.lat, predLoc.lng);
+            flyToAndGeocode(Number(predLoc.lat), Number(predLoc.lng), 17);
+            return;
+        }
+
+        // Fallback: fetch place details when geometry is absent
+        if (!OLA_MAPS_API_KEY || !prediction.place_id) return;
         try {
             const response = await fetch(
                 `https://api.olamaps.io/places/v1/details?place_id=${prediction.place_id}&api_key=${OLA_MAPS_API_KEY}`
             );
-            if (!response.ok) return;
+            if (!response.ok) {
+                if (__DEV__) console.log("[Search] place details failed:", response.status);
+                return;
+            }
             const data = await response.json();
-            const loc = data.result?.geometry?.location;
-            if (loc?.lat && loc?.lng) {
-                flyToAndGeocode(loc.lat, loc.lng);
+            if (__DEV__) console.log("[Search] place details:", JSON.stringify(data).slice(0, 300));
+            const loc = data.result?.geometry?.location ?? data.result?.location;
+            if (loc && loc.lat != null && loc.lng != null) {
+                flyToAndGeocode(Number(loc.lat), Number(loc.lng), 17);
             }
         } catch (e) {
             if (__DEV__) console.error("Place details error:", e);
         }
     };
 
-    const validatePincode = async (pincode: string) => {
+    // Returns { isValid, city, state } so handleSave can use fresh API values
+    // directly without relying on potentially-stale React state.
+    const validatePincode = async (pincode: string): Promise<{ isValid: boolean; city: string; state: string }> => {
         if (pincode.length !== 6) {
-            setPincodeValidation({
-                isValid: false,
-                isActive: false,
-                city: "",
-                state: "",
-                isLoading: false,
-                error: null,
-            });
-            setForm(prev => ({ ...prev, city: "", state: "" }));
-            return;
+            setPincodeValidation({ isValid: false, isActive: false, city: "", state: "", isLoading: false, error: "Enter a valid 6-digit pincode" });
+            return { isValid: false, city: "", state: "" };
         }
 
         setPincodeValidation(prev => ({ ...prev, isLoading: true, error: null }));
@@ -324,72 +348,44 @@ export default function AddressModal({
 
             if (result.status === true && result.data) {
                 const { city, state } = result.data;
-                setPincodeValidation({
-                    isValid: true,
-                    isActive: true,
-                    city,
-                    state,
-                    isLoading: false,
-                    error: null,
-                });
+                setPincodeValidation({ isValid: true, isActive: true, city, state, isLoading: false, error: null });
                 setForm(prev => ({ ...prev, city, state }));
+                return { isValid: true, city, state };
             } else {
-                setPincodeValidation({
-                    isValid: false,
-                    isActive: false,
-                    city: "",
-                    state: "",
-                    isLoading: false,
-                    error: result.message || "Pincode not found",
-                });
-                setForm(prev => ({ ...prev, city: "", state: "" }));
+                setPincodeValidation({ isValid: false, isActive: false, city: "", state: "", isLoading: false, error: result.message || "Pincode not found" });
                 Alert.alert(
                     "Service Unavailable",
                     result.message || "We're sorry, but delivery service is not available in your area yet.",
                     [{ text: "OK" }]
                 );
+                return { isValid: false, city: "", state: "" };
             }
         } catch (error) {
             if (__DEV__) console.error("Error validating pincode:", error);
-            setPincodeValidation({
-                isValid: false,
-                isActive: false,
-                city: "",
-                state: "",
-                isLoading: false,
-                error: "Failed to validate pincode",
-            });
+            setPincodeValidation({ isValid: false, isActive: false, city: "", state: "", isLoading: false, error: "Failed to validate pincode" });
             Alert.alert("Error", "Failed to validate pincode. Please check your internet connection.", [{ text: "OK" }]);
+            return { isValid: false, city: "", state: "" };
         }
     };
 
     const handleChange = (key: keyof AddressEdit, value: string) => {
         setForm({ ...form, [key]: value });
-        if (key === "pincode" && value.length === 6) {
-            validatePincode(value);
-        } else if (key === "pincode" && value.length < 6) {
-            setPincodeValidation({
-                isValid: false,
-                isActive: false,
-                city: "",
-                state: "",
-                isLoading: false,
-                error: null,
-            });
-            setForm(prev => ({ ...prev, city: "", state: "" }));
+        // Clear validation feedback whenever the pincode is edited
+        if (key === "pincode") {
+            setPincodeValidation({ isValid: false, isActive: false, city: "", state: "", isLoading: false, error: null });
         }
     };
 
-    const handleSave = () => {
-        if (!form.label || !form.name || !form.street || !form.city || !form.state || !form.pincode || !form.mobile_number) {
+    const handleSave = async () => {
+        if (!form.label || !form.name || !form.street || !form.pincode || !form.mobile_number) {
             Alert.alert("Missing Information", "Please fill all the fields");
             return;
         }
-        if (!pincodeValidation.isActive) {
-            Alert.alert("Service Unavailable", "Cannot save address as delivery service is not available in this area.");
-            return;
-        }
-        dispatch(saveAddress(form));
+
+        const { isValid, city, state } = await validatePincode(form.pincode);
+        if (!isValid) return;
+
+        dispatch(saveAddress({ ...form, city, state }));
         onClose();
     };
 
@@ -397,12 +393,18 @@ export default function AddressModal({
         !form.label ||
         !form.name ||
         !form.street ||
-        !form.city ||
-        !form.state ||
         !form.pincode ||
         !form.mobile_number ||
-        pincodeValidation.isLoading ||
-        !pincodeValidation.isActive;
+        pincodeValidation.isLoading;
+
+    const onWebViewMessage = (event: WebViewMessageEvent) => {
+        try {
+            const data = JSON.parse(event.nativeEvent.data);
+            if (data.type === "regionChange") {
+                triggerReverseGeocode(data.lat, data.lng);
+            }
+        } catch (e) {}
+    };
 
     const fieldConfigs = [
         { key: "name", placeholder: "Full Name", icon: "person-outline", keyboard: "default" },
@@ -469,29 +471,31 @@ export default function AddressModal({
                         <ScrollView
                             showsVerticalScrollIndicator={false}
                             keyboardShouldPersistTaps="handled"
+                            scrollEnabled={!mapScrollLock}
                             contentContainerStyle={{ paddingBottom: insets.bottom || 20 }}
                         >
-                            {/* Map Section */}
-                            <View style={{ height: 230, position: "relative", marginBottom: 4 }}>
-                                {/* Non-interactive map layer */}
-                                <View
-                                    pointerEvents="none"
-                                    style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-                                >
-                                    <WebView
-                                        ref={webViewRef}
-                                        source={{ html: MAP_HTML }}
-                                        style={{ flex: 1 }}
-                                        onLoadEnd={() => setMapReady(true)}
-                                        javaScriptEnabled
-                                        domStorageEnabled
-                                        scrollEnabled={false}
-                                        bounces={false}
-                                        overScrollMode="never"
-                                        showsHorizontalScrollIndicator={false}
-                                        showsVerticalScrollIndicator={false}
-                                    />
-                                </View>
+                            {/* Map Section — touch events lock the ScrollView so the map gets all gestures */}
+                            <View
+                                style={{ height: 230, position: "relative", marginBottom: 4 }}
+                                onTouchStart={() => setMapScrollLock(true)}
+                                onTouchEnd={() => setMapScrollLock(false)}
+                                onTouchCancel={() => setMapScrollLock(false)}
+                            >
+                                {/* Interactive map */}
+                                <WebView
+                                    ref={webViewRef}
+                                    source={{ html: MAP_HTML }}
+                                    style={{ flex: 1 }}
+                                    onLoadEnd={() => setMapReady(true)}
+                                    onMessage={onWebViewMessage}
+                                    javaScriptEnabled
+                                    domStorageEnabled
+                                    scrollEnabled={false}
+                                    bounces={false}
+                                    overScrollMode="never"
+                                    showsHorizontalScrollIndicator={false}
+                                    showsVerticalScrollIndicator={false}
+                                />
 
                                 {/* Center Pin */}
                                 <View
@@ -507,30 +511,7 @@ export default function AddressModal({
                                     <Ionicons name="location" size={28} color="#007AFF" />
                                 </View>
 
-                                {/* My Location Button */}
-                                <Pressable
-                                    onPress={goToMyLocation}
-                                    style={{
-                                        position: "absolute",
-                                        bottom: 8,
-                                        right: 8,
-                                        backgroundColor: "white",
-                                        borderRadius: 18,
-                                        width: 36,
-                                        height: 36,
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        shadowColor: "#000",
-                                        shadowOffset: { width: 0, height: 1 },
-                                        shadowOpacity: 0.15,
-                                        shadowRadius: 3,
-                                        elevation: 2,
-                                    }}
-                                >
-                                    <Ionicons name="locate" size={18} color="#007AFF" />
-                                </Pressable>
-
-                                {/* Search Bar Overlay */}
+                                {/* Search Bar */}
                                 <View style={{ position: "absolute", top: 8, left: 8, right: 8, zIndex: 20 }}>
                                     <View
                                         style={{
@@ -633,6 +614,33 @@ export default function AddressModal({
                                             </ScrollView>
                                         </View>
                                     )}
+                                </View>
+
+                                {/* My Location Button — bottom-right */}
+                                <View style={{ position: "absolute", bottom: 12, right: 12, zIndex: 30 }}>
+                                    <Pressable
+                                        onPress={() => {
+                                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                                            goToMyLocation();
+                                        }}
+                                        style={({ pressed }) => ({
+                                            backgroundColor: pressed ? "#007AFF" : "white",
+                                            borderRadius: 20,
+                                            width: 40,
+                                            height: 40,
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            shadowColor: "#000",
+                                            shadowOffset: { width: 0, height: 1 },
+                                            shadowOpacity: 0.15,
+                                            shadowRadius: 3,
+                                            elevation: 5,
+                                        })}
+                                    >
+                                        {({ pressed }) => (
+                                            <Ionicons name="locate" size={20} color={pressed ? "white" : "#007AFF"} />
+                                        )}
+                                    </Pressable>
                                 </View>
 
                                 {/* Location Loading Overlay */}
@@ -778,8 +786,8 @@ export default function AddressModal({
                                     ))}
                                 </View>
 
-                                {/* Service unavailable warning */}
-                                {!pincodeValidation.isActive && form.pincode.length === 6 && !pincodeValidation.isLoading && (
+                                {/* Service unavailable — only shown after a failed save attempt */}
+                                {pincodeValidation.error && !pincodeValidation.isLoading && (
                                     <View className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
                                         <View className="flex-row items-center mb-2">
                                             <Ionicons name="alert-circle" size={20} color="#EF4444" />
@@ -801,7 +809,7 @@ export default function AddressModal({
                                     className={`py-4 rounded-xl items-center mt-2 mb-6 shadow-sm ${isSubmitDisabled ? "bg-gray-300" : "bg-primary"}`}
                                 >
                                     <Text className={`font-bold text-base ${isSubmitDisabled ? "text-gray-500" : "text-white"}`}>
-                                        {pincodeValidation.isLoading ? "Validating..." : "Save Address"}
+                                        {pincodeValidation.isLoading ? "Validating pincode..." : "Save Address"}
                                     </Text>
                                 </Pressable>
                             </View>

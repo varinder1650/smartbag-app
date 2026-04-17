@@ -56,6 +56,7 @@ export interface ProductCartItem extends CartItemBase {
     stock: number;
     actual_price: number;
     discount: number;
+    user_custom_image?: string | null;
 }
 
 export interface PorterCartItem extends CartItemBase {

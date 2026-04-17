@@ -18,6 +18,13 @@ export type Product = {
     status?: string;
     allow_user_images?: boolean;
     allow_user_description?: boolean;
+    mockup_template_url?: string;
+    printable_area?: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
 };
 
 export type ServiceType = 'porter' | 'printout' | 'product';

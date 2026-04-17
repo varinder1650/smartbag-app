@@ -12,6 +12,7 @@ export interface ProductOrderItem {
     product_image?: string[];
     quantity: number;
     price: number;
+    user_custom_image?: string;
 }
 
 export interface PorterOrderItem {

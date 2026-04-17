@@ -6,7 +6,7 @@ import { CartItem } from "@/types/cart.types";
 import { Product } from "@/types/products.types";
 import { useSelector } from "react-redux";
 
-export function useCartActions(product: Product) {
+export function useCartActions(product: Product, customImageUrl?: string | null) {
     const dispatch = useAppDispatch();
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const mode: "guest" | "user" = isAuthenticated ? "user" : "guest";
@@ -17,7 +17,12 @@ export function useCartActions(product: Product) {
     const quantity = cartItem?.quantity ?? 0;
 
     const add = async () => {
-        const item: CartItem = { ...product, quantity: 1, serviceType: 'product' };
+        const item: CartItem = {
+            ...product,
+            quantity: 1,
+            serviceType: 'product',
+            ...(customImageUrl && { user_custom_image: customImageUrl }),
+        };
         dispatch(addToCart({ mode, item }));
         if (mode === "user") {
             try {

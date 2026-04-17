@@ -233,7 +233,13 @@ export default function ProductsDetails() {
             </ScrollView>
 
             {/*CART BUTTON */}
-            {product && <Cartbutton product={product} />}
+            {product && (
+                <Cartbutton
+                    product={product}
+                    customImageUrl={customImageUrl}
+                    requiresCustomImage={product.allow_user_images && !!product.mockup_template_url}
+                />
+            )}
         </SafeView>
     );
 }

@@ -6,17 +6,24 @@ import { Pressable, Text, View } from "react-native";
 
 interface Props {
     product: Product;
+    customImageUrl?: string | null;
+    requiresCustomImage?: boolean;
 }
 
-export default function CartButton({ product }: Props) {
-    const { quantity, add, increase, decrease } = useCartActions(product);
+export default function CartButton({ product, customImageUrl, requiresCustomImage }: Props) {
+    const { quantity, add, increase, decrease } = useCartActions(product, customImageUrl);
+
+    const isAddDisabled = requiresCustomImage && !customImageUrl;
 
     return (
         <View className="absolute bottom-5 w-full z-50">
             {quantity === 0 ? (
                 <Pressable
                     onPress={add}
-                    className="flex-row justify-center bg-primary items-center mx-5 rounded-full p-4 shadow-lg"
+                    disabled={isAddDisabled}
+                    className={`flex-row justify-center items-center mx-5 rounded-full p-4 shadow-lg ${
+                        isAddDisabled ? "bg-gray-400" : "bg-primary"
+                    }`}
                 >
                     <Text className="text-white font-extrabold text-lg">
                         Add to cart

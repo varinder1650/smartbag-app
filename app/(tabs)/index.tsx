@@ -37,62 +37,64 @@ export default function App() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
-      <CategoriesRow
-        categories={categories}
-        selectedCategory={selectCategory}
-        onSelectCategory={handleSelectCategory}
-      />
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={refresh}
-            colors={["#FF6B35"]} // Optionally match the primary color
-          />
-        }
-      >
-        <ShopStatusBanner />
-
-        {ProductsByCategory.map((category) =>
-          category.products.length > 0 ? (
-            <CategorySection
-              key={category.id}
-              title={category.name}
-              products={category.products}
-              onEndReached={loadMore}
-              loading={loading}
+      <View style={{ flex: 1, backgroundColor: "#FCF8F8" }}>
+        <CategoriesRow
+          categories={categories}
+          selectedCategory={selectCategory}
+          onSelectCategory={handleSelectCategory}
+        />
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refresh}
+              colors={["#FF6B35"]} // Optionally match the primary color
             />
-          ) : null
-        )}
+          }
+        >
+          <ShopStatusBanner />
 
-        {pagination?.hasNextPage && (
-          <Pressable
-            onPress={loadMore}
-            className="fmx-4 my-6 py-3 bg-gray-100 rounded-xl items-center"
-          >
-            <Text className="text-gray-700 font-semibold">{loading ? "Loading..." : "Load More"}</Text>
-          </Pressable>
-        )}
+          {ProductsByCategory.map((category) =>
+            category.products.length > 0 ? (
+              <CategorySection
+                key={category.id}
+                title={category.name}
+                products={category.products}
+                onEndReached={loadMore}
+                loading={loading}
+              />
+            ) : null
+          )}
 
-        {/* Extra Actions */}
-        <View className="flex-row px-4 gap-4 mt-4 mb-12">
-          <Pressable
-            onPress={handleNavigateRequest}
-            className="flex-1 bg-[#FF6B35] rounded-2xl py-4 items-center justify-center"
-          >
-            <Ionicons name="add-circle-outline" size={24} color="white" />
-            <Text className="text-white font-semibold text-sm mt-1">Request Product</Text>
-          </Pressable>
+          {pagination?.hasNextPage && (
+            <Pressable
+              onPress={loadMore}
+              className="fmx-4 my-6 py-3 bg-gray-100 rounded-xl items-center"
+            >
+              <Text className="text-gray-700 font-semibold">{loading ? "Loading..." : "Load More"}</Text>
+            </Pressable>
+          )}
 
-          <Pressable
-            onPress={handleNavigatePorter}
-            className="flex-1 bg-[#34C759] rounded-2xl py-4 items-center justify-center"
-          >
-            <Ionicons name="bicycle-outline" size={24} color="white" />
-            <Text className="text-white font-semibold text-sm mt-1">Porter Service</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
+          {/* Extra Actions */}
+          <View className="flex-row px-4 gap-4 mt-4 mb-12">
+            <Pressable
+              onPress={handleNavigateRequest}
+              className="flex-1 bg-[#FF6B35] rounded-2xl py-4 items-center justify-center"
+            >
+              <Ionicons name="add-circle-outline" size={24} color="white" />
+              <Text className="text-white font-semibold text-sm mt-1">Request Product</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleNavigatePorter}
+              className="flex-1 bg-[#34C759] rounded-2xl py-4 items-center justify-center"
+            >
+              <Ionicons name="bicycle-outline" size={24} color="white" />
+              <Text className="text-white font-semibold text-sm mt-1">Porter Service</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </View>
       <ActiveOrderBanner />
     </SafeView>
   );

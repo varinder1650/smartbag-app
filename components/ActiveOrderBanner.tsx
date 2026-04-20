@@ -71,7 +71,7 @@ export default function ActiveOrderBanner() {
         Animated.spring(slideAnim, {
             toValue: 0,
             useNativeDriver: true,
-            damping: 12,
+            damping: 14,
             stiffness: 100,
         }).start();
     };
@@ -115,9 +115,9 @@ export default function ActiveOrderBanner() {
             <Pressable
                 key={order.id}
                 onPress={() => router.push({ pathname: "/order-tracking", params: { orderId: order.id } })}
-                className="overflow-hidden rounded-2xl shadow-lg mb-2"
+                className={`overflow-hidden rounded-2xl shadow-xl border border-white/10 ${config.color}`}
             >
-                <View className={`${config.color} px-5 py-4`}>
+                <View className="px-5 py-4">
                     <View className="flex-row items-center justify-between">
                         <View className="flex-row items-center flex-1">
                             <Animated.View
@@ -125,16 +125,16 @@ export default function ActiveOrderBanner() {
                                     transform: [{ scale: pulseAnim }],
                                 }}
                             >
-                                <View className="bg-white/20 p-2 rounded-full mr-3">
+                                <View className="bg-white/25 p-2 rounded-full mr-3 shadow-sm">
                                     <Ionicons name={config.icon as any} size={24} color="white" />
                                 </View>
                             </Animated.View>
 
                             <View className="flex-1">
-                                <Text className="text-white font-bold text-base">
+                                <Text className="text-white font-black text-lg">
                                     {config.label}
                                 </Text>
-                                <Text className="text-white/90 text-sm mt-0.5" numberOfLines={1}>
+                                <Text className="text-white/90 font-medium text-sm mt-0.5" numberOfLines={1}>
                                     {order.status_message}
                                 </Text>
                             </View>
@@ -146,7 +146,7 @@ export default function ActiveOrderBanner() {
                                     e.stopPropagation();
                                     handleClose(order.id, order.order_status);
                                 }}
-                                className="bg-white/20 p-1.5 rounded-full mb-1 self-end"
+                                className="bg-black/20 p-1.5 rounded-full mb-1 self-end"
                             >
                                 <Ionicons name="close" size={14} color="white" />
                             </Pressable>
@@ -154,26 +154,18 @@ export default function ActiveOrderBanner() {
                     </View>
                 </View>
 
-                {/* Static Progress Line */}
-                <View className="bg-white/20 h-1">
-                    <View
-                        style={{ width: `${config.progress}%` }}
-                        className="bg-white h-full"
-                    />
-                </View>
             </Pressable>
         );
     };
 
     const { width: SCREEN_WIDTH } = Dimensions.get('window');
-    const BANNER_WIDTH = SCREEN_WIDTH - 32; // 32 = mx-4 margin (16*2)
 
     return (
         <Animated.View
             style={{
                 transform: [{ translateY: slideAnim }],
             }}
-            className="mx-4 mt-4"
+            className="absolute bottom-2 left-0 right-0 z-50"
         >
             <View>
                 {/* Horizontal Scroll for multiple orders, or single view */}
@@ -182,7 +174,7 @@ export default function ActiveOrderBanner() {
                         horizontal
                         pagingEnabled
                         showsHorizontalScrollIndicator={false}
-                        snapToInterval={BANNER_WIDTH}
+                        snapToInterval={SCREEN_WIDTH}
                         decelerationRate="fast"
                         onScroll={(e: any) => {
                             const offset = e.nativeEvent.contentOffset.x;
@@ -192,22 +184,24 @@ export default function ActiveOrderBanner() {
                         scrollEventThrottle={16}
                     >
                         {orders.map(order => (
-                            <View key={order.id} style={{ width: BANNER_WIDTH }}>
+                            <View key={order.id} style={{ width: SCREEN_WIDTH }} className="px-4">
                                 {renderBanner(order)}
                             </View>
                         ))}
                     </ScrollView>
                 ) : (
-                    renderBanner(orders[0])
+                    <View style={{ width: SCREEN_WIDTH }} className="px-4">
+                        {renderBanner(orders[0])}
+                    </View>
                 )}
 
                 {/* Pagination Dots */}
                 {orders.length > 1 && (
-                    <View className="flex-row justify-center mt-2 space-x-1">
+                    <View className="flex-row justify-center mt-2">
                         {orders.map((_, idx) => (
                             <View
                                 key={idx}
-                                className={`w-1.5 h-1.5 rounded-full ${currentIndex === idx ? 'bg-primary' : 'bg-gray-300'}`}
+                                className={`w-1.5 h-1.5 rounded-full mx-1 ${currentIndex === idx ? 'bg-primary' : 'bg-gray-300'}`}
                             />
                         ))}
                     </View>

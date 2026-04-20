@@ -25,7 +25,7 @@ export default function SearchBar({
     const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
-        let timer: NodeJS.Timeout;
+        let timer: ReturnType<typeof setTimeout>;
         const currentTerm = SEARCH_TERMS[termIndex];
 
         if (isDeleting) {

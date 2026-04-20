@@ -53,9 +53,20 @@ export function usePrintoutUploads(
 
             const totalFiles = res.assets.length;
             const docs: UploadedDocument[] = [];
+            const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
             for (let i = 0; i < res.assets.length; i++) {
                 const file = res.assets[i];
+
+                if (file.size && file.size > MAX_SIZE) {
+                    Alert.alert(
+                        "📄 File Too Large",
+                        `The file "${file.name}" exceeds the 10MB limit. Please choose a smaller file.`,
+                        [{ text: "Okay" }]
+                    );
+                    continue;
+                }
+
                 try {
                     setUploadProgress(10 + (i / totalFiles) * 30);
 
@@ -76,7 +87,7 @@ export function usePrintoutUploads(
                     setUploadProgress(80 + (i / totalFiles) * 20);
                 } catch (error) {
                     if (__DEV__) console.error(`Error processing ${file.name}:`, error);
-                    Alert.alert("Upload Error", `Failed to upload ${file.name}`);
+                    Alert.alert("❌ Upload Failed", `We couldn't upload "${file.name}". Please try another file.`);
                 }
             }
 
@@ -118,9 +129,20 @@ export function usePrintoutUploads(
 
             const totalPhotos = res.assets.length;
             const uploadedPhotos: UploadedPhoto[] = [];
+            const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
             for (let i = 0; i < res.assets.length; i++) {
                 const asset = res.assets[i];
+
+                if (asset.fileSize && asset.fileSize > MAX_SIZE) {
+                    Alert.alert(
+                        "🖼️ Image Too Large",
+                        `One of your selected photos exceeds the 10MB limit. Please choose a smaller image.`,
+                        [{ text: "Okay" }]
+                    );
+                    continue;
+                }
+
                 try {
                     setUploadProgress(10 + (i / totalPhotos) * 60);
                     const cloudUrl = await uploadToCloudinary(asset.uri, 'image/jpeg');
@@ -135,7 +157,7 @@ export function usePrintoutUploads(
                     setUploadProgress(70 + (i / totalPhotos) * 30);
                 } catch (error) {
                     if (__DEV__) console.error(`Error uploading photo ${i + 1}:`, error);
-                    Alert.alert("Upload Error", `Failed to upload photo ${i + 1}`);
+                    Alert.alert("❌ Upload Failed", `We couldn't upload photo ${i + 1}. Please try again.`);
                 }
             }
 

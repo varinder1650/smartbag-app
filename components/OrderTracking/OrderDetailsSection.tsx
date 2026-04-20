@@ -24,6 +24,12 @@ function ProductItem({ item }: { item: Extract<OrderItem, { type: "product" }> }
                 <Text className="text-gray-500 text-sm">
                     Qty: {item.quantity} x ₹{item.price}
                 </Text>
+                {item.user_custom_image && (
+                    <View className="flex-row items-center mt-1">
+                        <Ionicons name="image-outline" size={14} color="#3B82F6" />
+                        <Text className="text-blue-500 text-xs ml-1">Custom image attached</Text>
+                    </View>
+                )}
             </View>
             <Text className="font-bold text-gray-900">
                 ₹{item.quantity * item.price}

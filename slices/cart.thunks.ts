@@ -24,6 +24,7 @@ type BackendCartItem = {
         serviceType?: "product" | "porter" | "printout";
     };
     serviceDetails?: any;
+    user_custom_image?: string;
 };
 
 // Helper function to convert backend item to CartItem
@@ -49,6 +50,7 @@ function convertToCartItem(backendItem: BackendCartItem): CartItem {
             actual_price: product?.actual_price || product?.price || 0,
             discount: product?.discount || 0,
             stock: product?.stock || 0,
+            user_custom_image: backendItem.user_custom_image || null,
         };
         return productItem;
     } else if (serviceType === 'porter') {
@@ -86,6 +88,7 @@ function convertToCartItem(backendItem: BackendCartItem): CartItem {
         actual_price: product?.actual_price || product?.price || 0,
         discount: product?.discount || 0,
         stock: product?.stock || 0,
+        user_custom_image: backendItem.user_custom_image || null,
     };
     return defaultItem;
 }
@@ -185,6 +188,7 @@ export const syncUserCart = createAsyncThunk<CartItem[]>(
                     serviceType: resolvedServiceType,
                 },
                 serviceDetails: item.serviceDetails,
+                user_custom_image: item.user_custom_image || undefined,
             };
 
             return convertToCartItem(backendItem);

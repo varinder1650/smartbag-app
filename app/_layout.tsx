@@ -131,7 +131,7 @@ function RootLayoutWithProviders() {
             />
             <Stack.Screen
               name="address"
-              options={{ presentation: "modal", animation: "slide_from_bottom", headerShown: false }}
+              options={{ presentation: "transparentModal", animation: "slide_from_bottom", headerShown: false }}
             />
             <Stack.Screen
               name="requestProduct"

@@ -9,10 +9,17 @@ function CartProductItemInner({ item }: { item: ProductCartItem }) {
 
     return (
         <View className="bg-white rounded-xl p-4 mb-3 flex-row">
-            <Image
-                source={{ uri: item.images?.[0] }}
-                className="w-20 h-20 rounded-lg bg-gray-100"
-            />
+            <View className="relative">
+                <Image
+                    source={{ uri: item.images?.[0] }}
+                    className="w-20 h-20 rounded-lg bg-gray-100"
+                />
+                {item.user_custom_image && (
+                    <View className="absolute bottom-0 left-0 right-0 bg-blue-500 rounded-b-lg py-0.5">
+                        <Text className="text-white text-[9px] font-bold text-center">Customized</Text>
+                    </View>
+                )}
+            </View>
 
             <View className="flex-1 ml-3">
                 <Text className="font-semibold text-gray-900" numberOfLines={2}>

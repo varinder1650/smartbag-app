@@ -8,21 +8,47 @@ export default function AddressChip() {
     const router = useRouter();
     const defaultAddress = useSelector(selectDefaultAddress);
 
+    const renderAddressText = () => {
+        if (!defaultAddress) return <Text className="font-medium text-gray-700 flex-shrink" numberOfLines={1}>Select address</Text>;
+        
+        const labelStr = defaultAddress.label ? defaultAddress.label.toUpperCase() : "";
+        let remainingStr = "";
+        
+        if (defaultAddress.name) {
+            remainingStr += `${defaultAddress.name}, `;
+        }
+        remainingStr += defaultAddress.street || "";
+
+        return (
+            <Text className="text-xs flex-shrink" numberOfLines={1}>
+                {labelStr ? (
+                    <>
+                        <Text className="font-extrabold text-black">{labelStr}</Text>
+                        <Text className="font-medium text-gray-700"> - {remainingStr}</Text>
+                    </>
+                ) : (
+                    <Text className="font-medium text-gray-700">{remainingStr}</Text>
+                )}
+            </Text>
+        );
+    };
+
     return (
         <Pressable
-            className="flex-row items-center w-[75%]"
+            className="flex-col"
             onPress={() => router.push("/address")}
         >
-            <Ionicons name="location-outline" size={20} color="#007AFF" />
-            <View className="ml-2 max-w-[180px]">
-                <Text
-                    className="text-sm font-semibold text-gray-900"
-                    numberOfLines={1}
-                >
-                    {defaultAddress
-                        ? `${defaultAddress.street}, ${defaultAddress.city}`
-                        : "Select address"}
+            <Text className="text-gray-800 font-extrabold text-xs">
+                Smartbag
+            </Text>
+            <View className="flex-row items-center">
+                <Text className="text-black font-extrabold text-2xl">
+                    30 minutes
                 </Text>
+            </View>
+            <View className="flex-row items-center mt-1">
+                {renderAddressText()}
+                <Ionicons name="caret-down" size={12} color="#374151" style={{ marginLeft: 4 }} />
             </View>
         </Pressable>
     );

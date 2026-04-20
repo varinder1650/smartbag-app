@@ -68,6 +68,7 @@ export default function CheckoutScreen() {
                         type: "product",
                         product_id: item.id,
                         quantity: item.quantity || 1,
+                        ...((item as any).user_custom_image && { user_custom_image: (item as any).user_custom_image }),
                     };
                 }
 

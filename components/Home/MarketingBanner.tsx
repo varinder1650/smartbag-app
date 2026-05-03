@@ -78,12 +78,28 @@ export default function MarketingBanner({
           });
         }}
         renderItem={({ item }) => (
-          <View style={{ width: SCREEN_WIDTH }}>
+          <View style={{ width: SCREEN_WIDTH, position: "relative" }}>
             <Image
               source={{ uri: item.image_url }}
-              style={{ width: SCREEN_WIDTH, height: 180 }}
+              style={{ width: SCREEN_WIDTH, height: 220 }}
               resizeMode="cover"
             />
+            {item.containers.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+                contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 10, paddingTop: 6 }}
+              >
+                {item.containers.map((container, idx) => (
+                  <BannerContainer
+                    key={idx}
+                    container={container}
+                    onSelectCategory={onSelectCategory}
+                  />
+                ))}
+              </ScrollView>
+            )}
           </View>
         )}
       />
@@ -98,23 +114,6 @@ export default function MarketingBanner({
             />
           ))}
         </View>
-      )}
-
-      {/* Containers row */}
-      {(banners[activeIndex]?.containers?.length ?? 0) > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
-        >
-          {banners[activeIndex].containers.map((container, idx) => (
-            <BannerContainer
-              key={idx}
-              container={container}
-              onSelectCategory={onSelectCategory}
-            />
-          ))}
-        </ScrollView>
       )}
     </View>
   );

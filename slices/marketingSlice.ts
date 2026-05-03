@@ -35,7 +35,11 @@ const initialState: MarketingState = {
   error: null,
 };
 
-export const fetchMarketingBanners = createAsyncThunk(
+export const fetchMarketingBanners = createAsyncThunk<
+  MarketingBanner[],
+  void,
+  { rejectValue: string }
+>(
   "marketing/fetchBanners",
   async (_, { rejectWithValue }) => {
     try {
@@ -68,7 +72,7 @@ const marketingSlice = createSlice({
       )
       .addCase(fetchMarketingBanners.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? "Unknown error";
       });
   },
 });

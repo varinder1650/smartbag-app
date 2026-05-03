@@ -1,8 +1,8 @@
 // smartbag-app/components/Home/MarketingBanner.tsx
 import { MarketingBanner as BannerType } from "@/slices/marketingSlice";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Dimensions, FlatList, Image, ScrollView, View,
+  Dimensions, FlatList, Image, NativeScrollEvent, NativeSyntheticEvent, ScrollView, View,
 } from "react-native";
 import BannerContainer from "./BannerContainer";
 
@@ -23,11 +23,14 @@ export default function MarketingBanner({
   const flatListRef = useRef<FlatList<BannerType>>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Reset to first banner whenever the banner list changes
   useEffect(() => {
+    setActiveIndex(0);
+    flatListRef.current?.scrollToIndex({ index: 0, animated: false });
     if (banners.length > 0) onActiveBannerChange(banners[0]);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [banners]);
+  }, [banners, onActiveBannerChange]);
 
+  // Auto-rotate when there are multiple banners
   useEffect(() => {
     if (banners.length <= 1) return;
 
@@ -44,13 +47,16 @@ export default function MarketingBanner({
     }, interval * 1000);
 
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [activeIndex, banners]);
+  }, [activeIndex, banners, onActiveBannerChange]);
 
-  const handleMomentumScrollEnd = (e: any) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-    setActiveIndex(index);
-    onActiveBannerChange(banners[index] ?? null);
-  };
+  const handleMomentumScrollEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+      setActiveIndex(index);
+      onActiveBannerChange(banners[index] ?? null);
+    },
+    [banners, onActiveBannerChange],
+  );
 
   if (banners.length === 0) return null;
 
@@ -65,6 +71,12 @@ export default function MarketingBanner({
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item._id || item.id}
         onMomentumScrollEnd={handleMomentumScrollEnd}
+        onScrollToIndexFailed={(info) => {
+          flatListRef.current?.scrollToOffset({
+            offset: info.averageItemLength * info.index,
+            animated: true,
+          });
+        }}
         renderItem={({ item }) => (
           <View style={{ width: SCREEN_WIDTH }}>
             <Image
@@ -89,7 +101,7 @@ export default function MarketingBanner({
       )}
 
       {/* Containers row */}
-      {banners[activeIndex]?.containers?.length > 0 && (
+      {(banners[activeIndex]?.containers?.length ?? 0) > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}

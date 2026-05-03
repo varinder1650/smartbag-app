@@ -46,10 +46,14 @@ export default function App() {
   const handleNavigatePorter = useCallback(() => router.push("/porter"), []);
 
   const headerBgColor = banners.length > 0 ? headerBg : DEFAULT_BG;
+  const animatedHeaderBg = bgAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [prevColorRef.current, currentColorRef.current],
+  });
 
   return (
     <SafeView className="flex-1" style={{ backgroundColor: headerBgColor }}>
-      <View style={{ backgroundColor: headerBgColor }}>
+      <Animated.View style={{ backgroundColor: banners.length > 0 ? animatedHeaderBg : DEFAULT_BG }}>
         <TopBar />
         <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <CategoriesRow
@@ -64,7 +68,7 @@ export default function App() {
             onSelectCategory={handleSelectCategory}
           />
         )}
-      </View>
+      </Animated.View>
 
       <View style={{ flex: 1, backgroundColor: "#FCF8F8" }}>
         <ScrollView
@@ -93,7 +97,7 @@ export default function App() {
           {pagination?.hasNextPage && (
             <Pressable
               onPress={loadMore}
-              className="fmx-4 my-6 py-3 bg-gray-100 rounded-xl items-center"
+              className="mx-4 my-6 py-3 bg-gray-100 rounded-xl items-center"
             >
               <Text className="text-gray-700 font-semibold">
                 {loading ? "Loading..." : "Load More"}

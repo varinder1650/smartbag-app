@@ -61,13 +61,6 @@ export default function App() {
           selectedCategory={selectCategory}
           onSelectCategory={handleSelectCategory}
         />
-        {banners.length > 0 && (
-          <MarketingBanner
-            banners={banners}
-            onActiveBannerChange={handleActiveBannerChange}
-            onSelectCategory={handleSelectCategory}
-          />
-        )}
       </Animated.View>
 
       <View style={{ flex: 1, backgroundColor: "#FCF8F8" }}>
@@ -81,6 +74,14 @@ export default function App() {
           }
         >
           <ShopStatusBanner />
+
+          {banners.length > 0 && (
+            <MarketingBanner
+              banners={banners}
+              onActiveBannerChange={handleActiveBannerChange}
+              onSelectCategory={handleSelectCategory}
+            />
+          )}
 
           {ProductsByCategory.map((category) =>
             category.products.length > 0 ? (

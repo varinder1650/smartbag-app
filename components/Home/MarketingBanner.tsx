@@ -81,7 +81,7 @@ export default function MarketingBanner({
           <View style={{ width: SCREEN_WIDTH, position: "relative" }}>
             <Image
               source={{ uri: item.image_url }}
-              style={{ width: SCREEN_WIDTH, height: 220 }}
+              style={{ width: SCREEN_WIDTH, height: 200 }}
               resizeMode="cover"
             />
             {item.containers.length > 0 && (

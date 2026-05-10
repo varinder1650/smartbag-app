@@ -41,7 +41,7 @@ export default function EditProfile() {
                     Email
                 </Text>
                 <TextInput
-                    value={user?.email}
+                    value={user?.email || ""}
                     editable={false}
                     className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-gray-500 mb-4"
                 />
@@ -51,7 +51,7 @@ export default function EditProfile() {
                     Phone
                 </Text>
                 <TextInput
-                    value={user?.phone}
+                    value={user?.phone || ""}
                     editable={false}
                     className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-gray-500 mb-6"
                 />

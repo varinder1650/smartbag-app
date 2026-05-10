@@ -10,6 +10,7 @@ import { persistConfig } from './persistConfig';
 import { setStoreRef } from './storeRef';
 
 import mapPickerReducer from '../slices/mapPickerSlice';
+import marketingReducer from '../slices/marketingSlice';
 import shopStatusReducer from '../slices/shopStatusSlice';
 
 const persistCartReducer = persistReducer(
@@ -27,6 +28,7 @@ export const store = configureStore({
     price: priceReducer,
     shopStatus: shopStatusReducer,
     mapPicker: mapPickerReducer,
+    marketing: marketingReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

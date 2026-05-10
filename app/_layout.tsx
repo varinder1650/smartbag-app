@@ -7,6 +7,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { fetchAddresses } from "@/slices/addressSlice";
 import { restoreAuth } from "@/slices/authSlice";
 import { fetchPrices } from "@/slices/priceSlice";
+import { fetchMarketingBanners } from "@/slices/marketingSlice";
 import { fetchShopStatus } from "@/slices/shopStatusSlice";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Redirect, Stack, useSegments } from "expo-router";
@@ -80,6 +81,7 @@ function RootLayoutWithProviders() {
   useEffect(() => {
     dispatch(fetchPrices());
     dispatch(fetchShopStatus());
+    dispatch(fetchMarketingBanners());
 
     const interval = setInterval(() => {
       dispatch(fetchShopStatus());

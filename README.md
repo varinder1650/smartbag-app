@@ -7,7 +7,7 @@ Welcome to **SmartBag**, a hyper-local service and e-commerce application built 
 SmartBag is a comprehensive mobile application that offers various services to its users in a seamless experience. Key features include:
 
 - **Product Ordering:** Browse and order products easily with an integrated cart and checkout system.
-- **Printouts & Tickets:** Upload documents to request printouts (integrates PDF processing) and acquire tickets.
+- **Printouts & Tickets:** Upload documents to request printouts and acquire tickets.
 - **Porter Services:** Request porter services for logistics and moving goods.
 - **Delivery Partner Mode:** Built-in capabilities and views for delivery personnel to view active orders, accept available orders, and track routing.
 - **Order Tracking:** Real-time visibility into active and past orders.
@@ -45,13 +45,76 @@ This project is built using modern, standard tools in the React Native ecosystem
 - **Error Tracking & Monitoring:** [Sentry](https://docs.sentry.io/platforms/react-native/) (`@sentry/react-native`)
 - **Storage:** React Native Async Storage and Expo Secure Store
 
+## Project Structure
+
+```
+smartbag-app/
+├── app/                    # Expo Router file-based routing
+│   ├── (auth)/             # Authentication screens
+│   │   ├── login.tsx
+│   │   ├── signup.tsx
+│   │   ├── forgot-password.tsx
+│   │   ├── verify-email.tsx
+│   │   ├── reset-password.tsx
+│   │   └── require_phone.tsx
+│   ├── (tabs)/             # Customer tab navigation
+│   │   ├── index.tsx       # Home screen
+│   │   ├── delivery.tsx    # Delivery orders
+│   │   ├── cart.tsx        # Shopping cart
+│   │   ├── printout.tsx    # Print services
+│   │   └── profile.tsx     # User profile
+│   ├── (orders)/           # Order management
+│   │   ├── myOrders.tsx
+│   │   └── myRequests.tsx
+│   ├── (delivery)/         # Delivery partner screens
+│   │   ├── AssignedOrders.tsx
+│   │   ├── AvailableOrders.tsx
+│   │   └── DeliveredOrders.tsx
+│   └── *.tsx               # Standalone screens (checkout, address, porter, etc.)
+│
+├── components/             # Feature-based React components
+│   ├── Home/               # Home screen components
+│   ├── Checkout/           # Checkout flow components
+│   ├── Porter/             # Porter service components
+│   ├── OrderTracking/      # Order tracking components
+│   ├── delivery/           # Delivery-specific components
+│   ├── printout/           # Printout service components
+│   ├── tickets/            # Ticket/contact components
+│   └── ui/                 # Reusable UI primitives
+│
+├── slices/                 # Redux Toolkit slices
+│   ├── authSlice.ts
+│   ├── cartSlice.ts
+│   ├── cartSelectors.ts
+│   ├── addressSlice.ts
+│   ├── checkoutAddressSlice.ts
+│   ├── porterAddressSlice.ts
+│   ├── mapPickerSlice.ts
+│   ├── shopStatusSlice.ts
+│   ├── priceSlice.ts
+│   └── marketingSlice.ts
+│
+├── store/                  # Redux store configuration
+│   ├── store.ts
+│   ├── persistConfig.ts
+│   ├── hooks.ts
+│   └── storeRef.ts
+│
+└── hooks/                  # Custom React hooks
+    ├── useProducts.tsx
+    ├── useCartActions.ts
+    ├── useServiceCartActions.ts
+    ├── usePorterForm.ts
+    └── usePrintoutUploads.ts
+```
+
 ## Architecture
 
 The project's architecture is structured to separate concerns, making it highly modular and scalable:
 
 1. **File-Based Routing (`app/`):** Utilizes Expo Router. The `app/` folder dictates the navigation flow, supporting separate hierarchies like authentication flows `(auth)`, customer tabs `(tabs)`, delivery screens `(delivery)`, and order flows `(orders)`.
 2. **Feature Components (`components/`):** React components are organized by domain/feature (e.g., `components/delivery/`, `components/printout/`, `components/Checkout/`). This encapsulates UI markup naturally.
-3. **State Slices (`slices/` & `store/`):** Redux logic is divided into feature slices (like `cart.thunks.ts`), separating the business logic of data caching and mutations from the UI layer.
+3. **State Slices (`slices/` & `store/`):** Redux logic is divided into feature slices (like `cartSlice.ts`), separating the business logic of data caching and mutations from the UI layer.
 4. **Custom Hooks (`hooks/`):** Reusable business logic, such as data fetching (e.g., `useProducts`), is abstracted into React custom hooks.
 5. **Secure Storage & Offline Capability:** Makes use of `redux-persist` alongside Async Storage for state persistence, giving users a responsive offline-aware experience.
 
